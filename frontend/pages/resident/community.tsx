@@ -1,26 +1,40 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
-import { apiUtils } from '../../utils/api';
+import { apiUtils, eventAPI, announcementAPI } from '../../utils/api';
 
 interface Announcement {
-  id: string;
+  _id: string;
   title: string;
   content: string;
-  author: string;
-  date: string;
-  priority: 'low' | 'medium' | 'high';
+  author: { _id: string; name: string; email: string };
+  priority: string;
+  category: string;
+  targetAudience: string;
+  isActive: boolean;
+  publishAt: string;
+  expiresAt?: string;
+  attachments: string[];
+  readBy: string[];
+  createdAt: string;
 }
 
 interface Event {
-  id: string;
+  _id: string;
   title: string;
   description: string;
-  date: string;
-  time: string;
+  organizer: { _id: string; name: string; email: string };
+  startDate: string;
+  endDate: string;
   location: string;
-  attendees: number;
   maxAttendees: number;
+  attendees: Array<{ _id: string; name: string; email: string }>;
+  category: string;
+  isPublic: boolean;
+  isActive: boolean;
+  imageUrl?: string;
+  tags: string[];
+  createdAt: string;
 }
 
 interface CommunityMember {
@@ -33,12 +47,13 @@ interface CommunityMember {
 }
 
 export default function CommunityPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'members'>('announcements');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [members, setMembers] = useState<CommunityMember[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -47,133 +62,42 @@ export default function CommunityPage() {
         router.push('/resident/login');
         return;
       }
-
       const userInfo = apiUtils.getUserFromToken();
       if (userInfo?.role !== 'resident') {
         router.push('/resident/login');
         return;
       }
-
       setUser(userInfo);
       fetchCommunityData();
     };
-
     checkAuth();
   }, [router]);
 
   const fetchCommunityData = async () => {
     try {
       setLoading(true);
-      
-      // Mock data - in real app, this would come from API
-      const mockAnnouncements: Announcement[] = [
-        {
-          id: '1',
-          title: 'Monthly Community Meeting',
-          content: 'Join us for our monthly community meeting this Saturday at 2 PM in the community hall. We\'ll discuss upcoming maintenance projects and community improvements.',
-          author: 'Admin Team',
-          date: '2024-01-15',
-          priority: 'high'
-        },
-        {
-          id: '2',
-          title: 'Pool Maintenance Notice',
-          content: 'The swimming pool will be closed for maintenance from January 20-22. We apologize for any inconvenience.',
-          author: 'Facilities Manager',
-          date: '2024-01-14',
-          priority: 'medium'
-        },
-        {
-          id: '3',
-          title: 'New Security System',
-          content: 'We\'ve installed a new security system at the main entrance. Please collect your new access cards from the office.',
-          author: 'Security Team',
-          date: '2024-01-13',
-          priority: 'high'
-        }
-      ];
-
-      const mockEvents: Event[] = [
-        {
-          id: '1',
-          title: 'Community BBQ',
-          description: 'Join your neighbors for a fun community BBQ in the garden area. Food and drinks provided!',
-          date: '2024-01-25',
-          time: '6:00 PM',
-          location: 'Community Garden',
-          attendees: 15,
-          maxAttendees: 30
-        },
-        {
-          id: '2',
-          title: 'Yoga in the Park',
-          description: 'Free yoga sessions every Sunday morning. All skill levels welcome. Bring your own mat.',
-          date: '2024-01-21',
-          time: '9:00 AM',
-          location: 'Central Park',
-          attendees: 8,
-          maxAttendees: 20
-        },
-        {
-          id: '3',
-          title: 'Book Club Meeting',
-          description: 'This month we\'re discussing "The Midnight Library" by Matt Haig. New members welcome!',
-          date: '2024-01-28',
-          time: '7:00 PM',
-          location: 'Community Library',
-          attendees: 12,
-          maxAttendees: 15
-        }
-      ];
-
+      setError(null);
+      // Fetch real data from APIs
+      const [announcementsData, eventsData] = await Promise.all([
+        announcementAPI.getAnnouncements({ limit: 5, isActive: true }),
+        eventAPI.getEvents({ limit: 5, isActive: true, upcoming: true })
+      ]);
+      setAnnouncements(Array.isArray(announcementsData.announcements) ? announcementsData.announcements : []);
+      setEvents(Array.isArray(eventsData.events) ? eventsData.events : []);
+      // Mock members as fallback
       const mockMembers: CommunityMember[] = [
-        {
-          id: '1',
-          name: 'Sarah Johnson',
-          avatar: 'SJ',
-          role: 'Resident',
-          joinDate: '2023-01-15',
-          issueCount: 12
-        },
-        {
-          id: '2',
-          name: 'Mike Chen',
-          avatar: 'MC',
-          role: 'Resident',
-          joinDate: '2023-03-20',
-          issueCount: 9
-        },
-        {
-          id: '3',
-          name: 'Emily Davis',
-          avatar: 'ED',
-          role: 'Resident',
-          joinDate: '2023-02-10',
-          issueCount: 8
-        },
-        {
-          id: '4',
-          name: 'David Wilson',
-          avatar: 'DW',
-          role: 'Resident',
-          joinDate: '2023-04-05',
-          issueCount: 7
-        },
-        {
-          id: '5',
-          name: 'Lisa Brown',
-          avatar: 'LB',
-          role: 'Resident',
-          joinDate: '2023-01-30',
-          issueCount: 6
-        }
+        { id: '1', name: 'Sarah Johnson', avatar: 'SJ', role: 'Resident', joinDate: '2023-01-15', issueCount: 12 },
+        { id: '2', name: 'Mike Chen', avatar: 'MC', role: 'Resident', joinDate: '2023-03-20', issueCount: 9 },
+        { id: '3', name: 'Emily Davis', avatar: 'ED', role: 'Resident', joinDate: '2023-02-10', issueCount: 8 },
+        { id: '4', name: 'David Wilson', avatar: 'DW', role: 'Resident', joinDate: '2023-04-05', issueCount: 7 },
+        { id: '5', name: 'Lisa Brown', avatar: 'LB', role: 'Resident', joinDate: '2023-01-30', issueCount: 6 }
       ];
-
-      setAnnouncements(mockAnnouncements);
-      setEvents(mockEvents);
       setMembers(mockMembers);
     } catch (error) {
-      console.error('Error fetching community data:', error);
+      setError('Error fetching community data');
+      setAnnouncements([]);
+      setEvents([]);
+      setMembers([]);
     } finally {
       setLoading(false);
     }
@@ -198,6 +122,8 @@ export default function CommunityPage() {
   };
 
   if (!user) return null;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-600">{error}</div>;
 
   return (
     <>
@@ -259,14 +185,17 @@ export default function CommunityPage() {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-gray-900">Latest Announcements</h2>
-                    <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                    <button 
+                      onClick={() => router.push('/resident/announcements')}
+                      className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                    >
                       View All
                     </button>
                   </div>
                   
                   <div className="grid gap-6">
                     {announcements.map((announcement) => (
-                      <div key={announcement.id} className="bg-white rounded-lg shadow p-6">
+                      <div key={announcement._id} className="bg-white rounded-lg shadow p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div className="flex items-center space-x-3">
                             <span className="text-lg">{getPriorityIcon(announcement.priority)}</span>
@@ -275,11 +204,11 @@ export default function CommunityPage() {
                               {announcement.priority}
                             </span>
                           </div>
-                          <span className="text-sm text-gray-500">{new Date(announcement.date).toLocaleDateString()}</span>
+                          <span className="text-sm text-gray-500">{new Date(announcement.publishAt).toLocaleDateString()}</span>
                         </div>
                         <p className="text-gray-700 mb-4">{announcement.content}</p>
                         <div className="flex items-center justify-between text-sm text-gray-500">
-                          <span>Posted by {announcement.author}</span>
+                          <span>Posted by {announcement.author.name}</span>
                           <button className="text-indigo-600 hover:text-indigo-700 font-medium">
                             Read More
                           </button>
@@ -295,14 +224,17 @@ export default function CommunityPage() {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-gray-900">Upcoming Events</h2>
-                    <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-                      Create Event
+                    <button 
+                      onClick={() => router.push('/resident/events')}
+                      className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                    >
+                      View All
                     </button>
                   </div>
                   
                   <div className="grid gap-6">
                     {events.map((event) => (
-                      <div key={event.id} className="bg-white rounded-lg shadow p-6">
+                      <div key={event._id} className="bg-white rounded-lg shadow p-6">
                         <div className="flex items-start justify-between mb-4">
                           <div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">{event.title}</h3>
@@ -312,13 +244,13 @@ export default function CommunityPage() {
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                {new Date(event.date).toLocaleDateString()}
+                                {new Date(event.startDate).toLocaleDateString()}
                               </div>
                               <div className="flex items-center">
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                {event.time}
+                                {new Date(event.startDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                               </div>
                               <div className="flex items-center">
                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -331,7 +263,7 @@ export default function CommunityPage() {
                           </div>
                           <div className="text-right">
                             <div className="text-sm text-gray-600 mb-2">
-                              {event.attendees}/{event.maxAttendees} attending
+                              {event.attendees.length}/{event.maxAttendees} attending
                             </div>
                             <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors">
                               Join Event

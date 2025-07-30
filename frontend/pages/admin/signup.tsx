@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 
 export default function AdminSignup() {
@@ -24,8 +25,8 @@ export default function AdminSignup() {
       if (!res.ok) throw new Error(data.message || 'Signup failed');
       localStorage.setItem('token', data.token);
       router.push('/admin/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
     } finally {
       setLoading(false);
     }
@@ -111,9 +112,9 @@ export default function AdminSignup() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Already have an account?{' '}
-                <a href="/admin/login" className="text-orange-600 hover:text-orange-700 font-medium">
+                <Link href="/admin/login" className="text-orange-600 hover:text-orange-700 font-medium">
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>

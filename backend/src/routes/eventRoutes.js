@@ -216,7 +216,7 @@ router.post('/:id/leave', authenticateToken, async (req, res) => {
 router.get('/user/my-events', authenticateToken, async (req, res) => {
   try {
     const events = await Event.find({
-      attendees: req.user.id
+      'attendees.user': req.user.id
     })
     .sort({ startDate: 1 })
     .populate('organizer', 'name email');

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { notificationAPI } from '../../utils/api';
-import { useRouter } from 'next/router';
 
 interface Notification {
   _id: string;
@@ -27,7 +26,6 @@ interface NotificationResponse {
 }
 
 const ResidentNotifications: React.FC = () => {
-  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +42,7 @@ const ResidentNotifications: React.FC = () => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [filter, typeFilter]);
+  }, []);
 
   const fetchNotifications = async (page = 1) => {
     try {

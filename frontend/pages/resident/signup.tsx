@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 
 export default function ResidentSignup() {
@@ -24,8 +25,8 @@ export default function ResidentSignup() {
       if (!res.ok) throw new Error(data.message || 'Signup failed');
       localStorage.setItem('token', data.token);
       router.push('/resident/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
     } finally {
       setLoading(false);
     }
@@ -111,9 +112,9 @@ export default function ResidentSignup() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Already have an account?{' '}
-                <a href="/resident/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                <Link href="/resident/login" className="text-indigo-600 hover:text-indigo-700 font-medium">
                   Sign in
-                </a>
+                </Link>
               </p>
             </div>
           </div>

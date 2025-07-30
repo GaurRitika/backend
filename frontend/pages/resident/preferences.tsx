@@ -4,16 +4,28 @@ import { preferencesAPI, apiUtils } from '../../utils/api';
 import { useRouter } from 'next/router';
 
 export default function ResidentPreferences() {
-  const [user, setUser] = useState<any>(null);
-  const [preferences, setPreferences] = useState<any>({
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
+  const [preferences, setPreferences] = useState<{
+    notifications: { email: boolean; sms: boolean; push: boolean };
+    theme: string;
+  }>({
     notifications: { email: true, sms: false, push: false },
     theme: 'light',
   });
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+
+  const fetchPreferences = async () => {
+    setError('');
+    try {
+      const res = await preferencesAPI.getPreferences('resident');
+      setPreferences(res.preferences || preferences);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to load preferences');
+    }
+  };
 
   useEffect(() => {
     if (!apiUtils.isAuthenticated()) {
@@ -29,19 +41,6 @@ export default function ResidentPreferences() {
     fetchPreferences();
   }, [router]);
 
-  const fetchPreferences = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await preferencesAPI.getPreferences('resident');
-      setPreferences(res.preferences || preferences);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load preferences');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -50,8 +49,8 @@ export default function ResidentPreferences() {
     try {
       await preferencesAPI.updatePreferences('resident', preferences);
       setSuccess('Preferences updated successfully!');
-    } catch (err: any) {
-      setError(err.message || 'Failed to update preferences');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update preferences');
     } finally {
       setSaving(false);
     }

@@ -21,7 +21,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
   const [profile, setProfile] = useState<UserProfile>({
     name: '',
     email: '',
@@ -38,7 +38,6 @@ export default function ProfilePage() {
       timezone: 'UTC'
     }
   });
-  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -89,8 +88,8 @@ export default function ProfilePage() {
       // In real app, this would call API to update profile
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       setSuccess('Profile updated successfully!');
-    } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setSaving(false);
     }
@@ -106,8 +105,8 @@ export default function ProfilePage() {
       // In real app, this would call API to change password
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
       setSuccess('Password changed successfully!');
-    } catch (err: any) {
-      setError(err.message || 'Failed to change password');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to change password');
     } finally {
       setSaving(false);
     }
@@ -235,6 +234,7 @@ export default function ProfilePage() {
                         preferences: {...profile.preferences, language: e.target.value}
                       })}
                       className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      aria-label="Select language preference"
                     >
                       <option value="en">English</option>
                       <option value="es">Spanish</option>
@@ -252,6 +252,7 @@ export default function ProfilePage() {
                         preferences: {...profile.preferences, theme: e.target.value as 'light' | 'dark' | 'auto'}
                       })}
                       className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      aria-label="Select theme preference"
                     >
                       <option value="light">Light</option>
                       <option value="dark">Dark</option>

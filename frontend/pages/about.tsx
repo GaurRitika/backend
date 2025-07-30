@@ -217,7 +217,7 @@ export default function AboutPage() {
             <div className="text-center mb-16">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Our Team</h2>
               <p className="text-xl text-gray-600 max-w-4xl mx-auto">
-                We're a dedicated team of developers, designers, and community experts passionate about 
+                We&apos;re a dedicated team of developers, designers, and community experts passionate about 
                 improving residential living through technology.
               </p>
             </div>

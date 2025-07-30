@@ -4,38 +4,22 @@ const { authenticateToken } = require('../middleware/auth');
 const Announcement = require('../models/Announcement');
 const User = require('../models/User');
 
-// Get all announcements (public)
+// Get all announcements (public, for residents)
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 20, category, priority, isActive, targetAudience } = req.query;
+    const { page = 1, limit = 20, category, priority, isActive } = req.query;
     const skip = (page - 1) * limit;
-
     let query = { isActive: true };
-    
-    if (category) {
-      query.category = category;
-    }
-    
-    if (priority) {
-      query.priority = priority;
-    }
-    
-    if (isActive !== undefined) {
-      query.isActive = isActive === 'true';
-    }
-    
-    if (targetAudience) {
-      query.targetAudience = targetAudience;
-    }
-
+    if (category) query.category = category;
+    if (priority) query.priority = priority;
+    if (isActive !== undefined) query.isActive = isActive === 'true';
+    // Do NOT filter by targetAudience for residents, show all active
     const announcements = await Announcement.find(query)
       .sort({ priority: -1, createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .populate('author', 'name email');
-
     const total = await Announcement.countDocuments(query);
-
     res.json({
       announcements,
       pagination: {
@@ -199,20 +183,16 @@ router.get('/user/unread', authenticateToken, async (req, res) => {
   }
 });
 
-// Get announcements by author (Admin only)
+// Get announcements by author (Admin only, always return all authored)
 router.get('/user/authored', authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access denied' });
     }
-
-    const announcements = await Announcement.find({
-      author: req.user.id
-    })
-    .sort({ createdAt: -1 })
-    .populate('author', 'name email');
-
-    res.json(announcements);
+    const announcements = await Announcement.find({ author: req.user.id })
+      .sort({ createdAt: -1 })
+      .populate('author', 'name email');
+    res.json({ announcements });
   } catch (error) {
     console.error('Error fetching authored announcements:', error);
     res.status(500).json({ message: 'Failed to fetch authored announcements' });

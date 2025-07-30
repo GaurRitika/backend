@@ -16,7 +16,7 @@ interface Resident {
 }
 
 export default function ResidentsPage() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [residents, setResidents] = useState<Resident[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -92,7 +92,7 @@ export default function ResidentsPage() {
     if (user) {
       fetchResidents();
     }
-  }, [statusFilter, searchTerm]);
+  }, [statusFilter, searchTerm, user]);
 
   const filteredResidents = residents;
 

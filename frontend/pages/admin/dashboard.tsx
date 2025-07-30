@@ -33,7 +33,7 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalIssues: 0,
@@ -85,9 +85,10 @@ export default function AdminDashboard() {
         resolvedIssues: statsResponse.resolvedIssues || 0,
         inProgressIssues: statsResponse.inProgressIssues || 0
       });
-    } catch (err: any) {
-      setError(err.message);
-      if (err.message.includes('401') || err.message.includes('403')) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      if (errorMessage.includes('401') || errorMessage.includes('403')) {
         router.push('/admin/login');
       }
     } finally {
@@ -116,8 +117,8 @@ export default function AdminDashboard() {
         resolvedIssues: statsResponse.resolvedIssues || 0,
         inProgressIssues: statsResponse.inProgressIssues || 0
       });
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -246,6 +247,7 @@ export default function AdminDashboard() {
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  aria-label="Filter issues by status"
                 >
                   <option value="">All Status</option>
                   <option value="pending">Pending</option>
@@ -260,6 +262,7 @@ export default function AdminDashboard() {
                   value={filters.category}
                   onChange={(e) => handleFilterChange('category', e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  aria-label="Filter issues by category"
                 >
                   <option value="">All Categories</option>
                   <option value="general">General</option>

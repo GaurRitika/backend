@@ -21,12 +21,9 @@ interface NotificationStats {
 }
 
 const AdminNotifications: React.FC = () => {
-  const router = useRouter();
   const [stats, setStats] = useState<NotificationStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showSendForm, setShowSendForm] = useState(false);
-  const [showBroadcastForm, setShowBroadcastForm] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'overview' | 'send' | 'broadcast'>('overview');
 
   // Send notification form state
@@ -91,15 +88,17 @@ const AdminNotifications: React.FC = () => {
   const handleBroadcastNotification = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const result = await notificationAPI.broadcastNotification(broadcastForm);
-      setBroadcastForm({
-        title: '',
-        message: '',
-        type: 'announcement',
-        priority: 'medium',
-        actionUrl: '',
-        userRole: ''
+      const { title, message, type, priority, actionUrl, userRole } = broadcastForm;
+      // Only send relevant fields, no recipientId
+      const result = await notificationAPI.broadcastNotification({
+        title,
+        message,
+        type,
+        priority,
+        actionUrl,
+        userRole: userRole || undefined
       });
+      setBroadcastForm({ title: '', message: '', type: 'announcement', priority: 'medium', actionUrl: '', userRole: '' });
       setShowBroadcastForm(false);
       fetchStats(); // Refresh stats
       alert(`Notification broadcasted to ${result.sentCount} users!`);

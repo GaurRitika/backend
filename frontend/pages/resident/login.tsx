@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Navbar from '../../components/Navbar';
 import { authAPI } from '../../utils/api';
 
@@ -19,8 +20,8 @@ export default function ResidentLogin() {
       if (data.user.role !== 'resident') throw new Error('Not a resident account');
       localStorage.setItem('token', data.token);
       router.push('/resident/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -90,10 +91,10 @@ export default function ResidentLogin() {
             
             <div className="mt-6 text-center">
               <p className="text-gray-600">
-                Don't have an account?{' '}
-                <a href="/resident/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                Don&apos;t have an account?{' '}
+                <Link href="/resident/signup" className="text-indigo-600 hover:text-indigo-700 font-medium">
                   Sign up
-                </a>
+                </Link>
               </p>
             </div>
           </div>

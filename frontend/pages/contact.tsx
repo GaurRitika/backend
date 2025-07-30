@@ -38,7 +38,7 @@ export default function ContactPage() {
                 Contact Us
               </h1>
               <p className="text-xl md:text-2xl text-indigo-100 max-w-3xl mx-auto">
-                Get in touch with our team. We're here to help you transform your community.
+                Get in touch with our team. We&apos;re here to help you transform your community.
               </p>
             </div>
           </div>
@@ -52,7 +52,7 @@ export default function ContactPage() {
               
               {success && (
                 <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                  Thank you for your message! We'll get back to you within 24 hours.
+                  Thank you for your message! We&apos;ll get back to you within 24 hours.
                 </div>
               )}
 
@@ -256,7 +256,7 @@ export default function ContactPage() {
                 </h3>
                 <p className="text-gray-600">
                   Absolutely. We use enterprise-grade encryption and security measures to protect all 
-                  resident and community data. We're also fully compliant with data protection regulations.
+                  resident and community data. We&apos;re also fully compliant with data protection regulations.
                 </p>
               </div>
 

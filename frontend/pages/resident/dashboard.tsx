@@ -21,7 +21,7 @@ interface Issue {
 }
 
 export default function ResidentDashboard() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [showNewIssueForm, setShowNewIssueForm] = useState(false);
   const [newIssue, setNewIssue] = useState({ 
@@ -60,9 +60,10 @@ export default function ResidentDashboard() {
       setFetching(true);
       const response = await issueAPI.getMyIssues();
       setIssues(response.issues || []);
-    } catch (err: any) {
-      setError(err.message);
-      if (err.message.includes('401') || err.message.includes('403')) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred';
+      setError(errorMessage);
+      if (errorMessage.includes('401') || errorMessage.includes('403')) {
         router.push('/resident/login');
       }
     } finally {
@@ -80,8 +81,8 @@ export default function ResidentDashboard() {
       setIssues([response.issue, ...issues]);
       setNewIssue({ title: '', description: '', category: 'general', priority: 'medium' });
       setShowNewIssueForm(false);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -107,6 +108,8 @@ export default function ResidentDashboard() {
     }
   };
 
+  const safeIssues = Array.isArray(issues) ? issues : [];
+
   if (!user) return null;
 
   return (
@@ -131,7 +134,7 @@ export default function ResidentDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Total Issues</p>
-                  <p className="text-2xl font-bold text-gray-900">{issues.length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{safeIssues.length}</p>
                 </div>
               </div>
             </div>
@@ -145,7 +148,7 @@ export default function ResidentDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-gray-900">{issues.filter(i => i.status === 'pending').length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{safeIssues.filter(i => i.status === 'pending').length}</p>
                 </div>
               </div>
             </div>
@@ -159,7 +162,7 @@ export default function ResidentDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">In Progress</p>
-                  <p className="text-2xl font-bold text-gray-900">{issues.filter(i => i.status === 'in-progress').length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{safeIssues.filter(i => i.status === 'in-progress').length}</p>
                 </div>
               </div>
             </div>
@@ -173,7 +176,7 @@ export default function ResidentDashboard() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600">Resolved</p>
-                  <p className="text-2xl font-bold text-gray-900">{issues.filter(i => i.status === 'resolved').length}</p>
+                  <p className="text-2xl font-bold text-gray-900">{safeIssues.filter(i => i.status === 'resolved').length}</p>
                 </div>
               </div>
             </div>
@@ -210,7 +213,7 @@ export default function ResidentDashboard() {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
                   <p className="mt-2 text-gray-600">Loading your issues...</p>
                 </div>
-              ) : issues.length === 0 ? (
+              ) : safeIssues.length === 0 ? (
                 <div className="px-6 py-12 text-center">
                   <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -219,7 +222,7 @@ export default function ResidentDashboard() {
                   <p className="mt-1 text-sm text-gray-500">Get started by raising your first issue.</p>
                 </div>
               ) : (
-                issues.map((issue) => (
+                safeIssues.map((issue) => (
                   <div key={issue._id} className="px-6 py-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
