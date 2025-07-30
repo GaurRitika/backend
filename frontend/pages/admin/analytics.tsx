@@ -1,28 +1,57 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
-import { issueAPI, apiUtils } from '../../utils/api';
+import { analyticsAPI, apiUtils } from '../../utils/api';
 
 interface AnalyticsData {
-  totalIssues: number;
-  pendingIssues: number;
-  resolvedIssues: number;
-  inProgressIssues: number;
-  rejectedIssues: number;
-  avgResolutionTime: number;
-  categoryBreakdown: {
-    [key: string]: number;
+  overview: {
+    totalIssues: number;
+    pendingIssues: number;
+    resolvedIssues: number;
+    inProgressIssues: number;
+    rejectedIssues: number;
+    avgResolutionTime: number;
+    resolutionRate: string;
   };
-  monthlyTrends: {
-    [key: string]: number;
-  };
-  priorityDistribution: {
-    [key: string]: number;
-  };
-  topResidents: Array<{
-    name: string;
-    issueCount: number;
+  categoryBreakdown: Array<{
+    _id: string;
+    count: number;
   }>;
+  priorityDistribution: Array<{
+    _id: string;
+    count: number;
+  }>;
+  monthlyTrends: Array<{
+    _id: {
+      year: number;
+      month: number;
+    };
+    count: number;
+    resolved: number;
+  }>;
+  topResidents: Array<{
+    _id: string;
+    name: string;
+    email: string;
+    issueCount: number;
+    resolvedCount: number;
+  }>;
+  statusTimeline: Array<{
+    _id: {
+      date: string;
+      status: string;
+    };
+    count: number;
+  }>;
+  responseTime: {
+    avgResponseTime: number;
+    minResponseTime: number;
+    maxResponseTime: number;
+  };
+  dateRange: {
+    start: string;
+    end: string;
+  };
 }
 
 export default function AdminAnalytics() {
@@ -56,55 +85,38 @@ export default function AdminAnalytics() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      // Mock analytics data - in real app, this would come from API
-      const mockData: AnalyticsData = {
-        totalIssues: 156,
-        pendingIssues: 23,
-        resolvedIssues: 98,
-        inProgressIssues: 28,
-        rejectedIssues: 7,
-        avgResolutionTime: 3.2,
-        categoryBreakdown: {
-          maintenance: 45,
-          security: 12,
-          noise: 18,
-          utilities: 25,
-          cleaning: 22,
-          parking: 14,
-          general: 20
-        },
-        monthlyTrends: {
-          'Jan': 12,
-          'Feb': 15,
-          'Mar': 18,
-          'Apr': 22,
-          'May': 25,
-          'Jun': 28,
-          'Jul': 24,
-          'Aug': 20,
-          'Sep': 18,
-          'Oct': 15,
-          'Nov': 12,
-          'Dec': 10
-        },
-        priorityDistribution: {
-          urgent: 8,
-          high: 25,
-          medium: 89,
-          low: 34
-        },
-        topResidents: [
-          { name: 'Sarah Johnson', issueCount: 12 },
-          { name: 'Mike Chen', issueCount: 9 },
-          { name: 'Emily Davis', issueCount: 8 },
-          { name: 'David Wilson', issueCount: 7 },
-          { name: 'Lisa Brown', issueCount: 6 }
-        ]
-      };
+      setError('');
       
-      setAnalytics(mockData);
+      // Calculate date range based on timeRange
+      const endDate = new Date();
+      const startDate = new Date();
+      
+      switch (timeRange) {
+        case '7d':
+          startDate.setDate(endDate.getDate() - 7);
+          break;
+        case '30d':
+          startDate.setDate(endDate.getDate() - 30);
+          break;
+        case '90d':
+          startDate.setDate(endDate.getDate() - 90);
+          break;
+        case '1y':
+          startDate.setFullYear(endDate.getFullYear() - 1);
+          break;
+        default:
+          startDate.setDate(endDate.getDate() - 30);
+      }
+      
+      const response = await analyticsAPI.getAnalytics({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+      });
+      
+      setAnalytics(response);
     } catch (err: any) {
-      setError(err.message);
+      console.error('Error fetching analytics:', err);
+      setError(err.message || 'Failed to fetch analytics');
     } finally {
       setLoading(false);
     }
@@ -184,7 +196,7 @@ export default function AdminAnalytics() {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Total Issues</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.totalIssues}</p>
+                      <p className="text-2xl font-bold text-gray-900">{analytics.overview.totalIssues}</p>
                     </div>
                   </div>
                 </div>
@@ -198,8 +210,8 @@ export default function AdminAnalytics() {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Resolved</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.resolvedIssues}</p>
-                      <p className="text-xs text-green-600">+{Math.round((analytics.resolvedIssues / analytics.totalIssues) * 100)}%</p>
+                      <p className="text-2xl font-bold text-gray-900">{analytics.overview.resolvedIssues}</p>
+                      <p className="text-xs text-green-600">+{analytics.overview.resolutionRate}%</p>
                     </div>
                   </div>
                 </div>
@@ -213,7 +225,7 @@ export default function AdminAnalytics() {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Avg Resolution</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.avgResolutionTime} days</p>
+                      <p className="text-2xl font-bold text-gray-900">{analytics.overview.avgResolutionTime} days</p>
                     </div>
                   </div>
                 </div>
@@ -227,7 +239,7 @@ export default function AdminAnalytics() {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Pending</p>
-                      <p className="text-2xl font-bold text-gray-900">{analytics.pendingIssues}</p>
+                      <p className="text-2xl font-bold text-gray-900">{analytics.overview.pendingIssues}</p>
                     </div>
                   </div>
                 </div>
@@ -239,20 +251,20 @@ export default function AdminAnalytics() {
                 <div className="bg-white rounded-lg shadow p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Issues by Category</h3>
                   <div className="space-y-3">
-                    {Object.entries(analytics.categoryBreakdown).map(([category, count]) => (
-                      <div key={category} className="flex items-center justify-between">
+                    {analytics.categoryBreakdown.map((category) => (
+                      <div key={category._id} className="flex items-center justify-between">
                         <div className="flex items-center">
                           <div className="w-3 h-3 bg-indigo-500 rounded-full mr-3"></div>
-                          <span className="text-sm font-medium text-gray-700 capitalize">{category}</span>
+                          <span className="text-sm font-medium text-gray-700 capitalize">{category._id}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <div className="w-32 bg-gray-200 rounded-full h-2">
                             <div 
                               className="bg-indigo-500 h-2 rounded-full" 
-                              style={{ width: `${(count / analytics.totalIssues) * 100}%` }}
+                              style={{ width: `${(category.count / analytics.overview.totalIssues) * 100}%` }}
                             ></div>
                           </div>
-                          <span className="text-sm text-gray-600 w-8 text-right">{count}</span>
+                          <span className="text-sm text-gray-600 w-8 text-right">{category.count}</span>
                         </div>
                       </div>
                     ))}
@@ -263,20 +275,20 @@ export default function AdminAnalytics() {
                 <div className="bg-white rounded-lg shadow p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Priority Distribution</h3>
                   <div className="space-y-3">
-                    {Object.entries(analytics.priorityDistribution).map(([priority, count]) => (
-                      <div key={priority} className="flex items-center justify-between">
+                    {analytics.priorityDistribution.map((priority) => (
+                      <div key={priority._id} className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <div className={`w-3 h-3 rounded-full mr-3 ${getPriorityColor(priority)}`}></div>
-                          <span className="text-sm font-medium text-gray-700 capitalize">{priority}</span>
+                          <div className={`w-3 h-3 rounded-full mr-3 ${getPriorityColor(priority._id)}`}></div>
+                          <span className="text-sm font-medium text-gray-700 capitalize">{priority._id}</span>
                         </div>
                         <div className="flex items-center space-x-2">
                           <div className="w-32 bg-gray-200 rounded-full h-2">
                             <div 
-                              className={`h-2 rounded-full ${getPriorityColor(priority)}`}
-                              style={{ width: `${(count / analytics.totalIssues) * 100}%` }}
+                              className={`h-2 rounded-full ${getPriorityColor(priority._id)}`}
+                              style={{ width: `${(priority.count / analytics.overview.totalIssues) * 100}%` }}
                             ></div>
                           </div>
-                          <span className="text-sm text-gray-600 w-8 text-right">{count}</span>
+                          <span className="text-sm text-gray-600 w-8 text-right">{priority.count}</span>
                         </div>
                       </div>
                     ))}
@@ -288,15 +300,21 @@ export default function AdminAnalytics() {
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Issue Trends</h3>
                 <div className="flex items-end space-x-2 h-32">
-                  {Object.entries(analytics.monthlyTrends).map(([month, count]) => (
-                    <div key={month} className="flex-1 flex flex-col items-center">
-                      <div 
-                        className="w-full bg-indigo-500 rounded-t"
-                        style={{ height: `${(count / Math.max(...Object.values(analytics.monthlyTrends))) * 100}%` }}
-                      ></div>
-                      <span className="text-xs text-gray-600 mt-2">{month}</span>
-                    </div>
-                  ))}
+                  {analytics.monthlyTrends.map((trend) => {
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    const monthName = monthNames[trend._id.month - 1];
+                    const maxCount = Math.max(...analytics.monthlyTrends.map(t => t.count));
+                    
+                    return (
+                      <div key={`${trend._id.year}-${trend._id.month}`} className="flex-1 flex flex-col items-center">
+                        <div 
+                          className="w-full bg-indigo-500 rounded-t"
+                          style={{ height: `${(trend.count / maxCount) * 100}%` }}
+                        ></div>
+                        <span className="text-xs text-gray-600 mt-2">{monthName}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -305,14 +323,14 @@ export default function AdminAnalytics() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Residents by Issue Count</h3>
                 <div className="space-y-3">
                   {analytics.topResidents.map((resident, index) => (
-                    <div key={resident.name} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div key={resident._id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center">
                         <span className="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-sm font-medium mr-3">
                           {index + 1}
                         </span>
                         <span className="text-sm font-medium text-gray-900">{resident.name}</span>
                       </div>
-                      <span className="text-sm text-gray-600">{resident.issueCount} issues</span>
+                      <span className="text-sm text-gray-600">{resident.issueCount} issues ({resident.resolvedCount} resolved)</span>
                     </div>
                   ))}
                 </div>
@@ -326,18 +344,20 @@ export default function AdminAnalytics() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Resolution Rate</span>
                       <span className="text-sm font-medium text-green-600">
-                        {Math.round((analytics.resolvedIssues / analytics.totalIssues) * 100)}%
+                        {analytics.overview.resolutionRate}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Rejection Rate</span>
                       <span className="text-sm font-medium text-red-600">
-                        {Math.round((analytics.rejectedIssues / analytics.totalIssues) * 100)}%
+                        {Math.round((analytics.overview.rejectedIssues / analytics.overview.totalIssues) * 100)}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-600">Avg Response Time</span>
-                      <span className="text-sm font-medium text-blue-600">2.1 hours</span>
+                      <span className="text-sm font-medium text-blue-600">
+                        {analytics.responseTime.avgResponseTime.toFixed(1)} days
+                      </span>
                     </div>
                   </div>
                 </div>

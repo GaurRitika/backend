@@ -119,17 +119,17 @@ export default function ProfilePage() {
     <>
       <Navbar />
       <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="px-4 py-8 mx-auto max-w-4xl sm:px-6 lg:px-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile Settings</h1>
+            <h1 className="mb-2 text-3xl font-bold text-gray-900">Profile Settings</h1>
             <p className="text-gray-600">Manage your account information and preferences</p>
           </div>
 
           {/* Tab Navigation */}
           <div className="mb-8">
             <div className="border-b border-gray-200">
-              <nav className="-mb-px flex space-x-8">
+              <nav className="flex -mb-px space-x-8">
                 <button
                   onClick={() => setActiveTab('profile')}
                   className={`py-2 px-1 border-b-2 font-medium text-sm ${
@@ -166,75 +166,75 @@ export default function ProfilePage() {
 
           {/* Error/Success Messages */}
           {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            <div className="px-4 py-3 mb-6 text-red-700 bg-red-50 rounded-lg border border-red-200">
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            <div className="px-4 py-3 mb-6 text-green-700 bg-green-50 rounded-lg border border-green-200">
               {success}
             </div>
           )}
 
           {/* Profile Tab */}
           {activeTab === 'profile' && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Personal Information</h2>
+            <div className="p-6 bg-white rounded-lg shadow">
+              <h2 className="mb-6 text-xl font-semibold text-gray-900">Personal Information</h2>
               <form onSubmit={handleProfileUpdate} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Full Name</label>
                     <input
                       type="text"
                       value={profile.name}
                       onChange={(e) => setProfile({...profile, name: e.target.value})}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Email</label>
                     <input
                       type="email"
                       value={profile.email}
                       onChange={(e) => setProfile({...profile, email: e.target.value})}
                       required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Phone Number</label>
                     <input
                       type="tel"
                       value={profile.phone}
                       onChange={(e) => setProfile({...profile, phone: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Apartment</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Apartment</label>
                     <input
                       type="text"
                       value={profile.apartment}
                       onChange={(e) => setProfile({...profile, apartment: e.target.value})}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Language</label>
                     <select
                       value={profile.preferences.language}
                       onChange={(e) => setProfile({
                         ...profile, 
                         preferences: {...profile.preferences, language: e.target.value}
                       })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     >
                       <option value="en">English</option>
                       <option value="es">Spanish</option>
@@ -244,14 +244,14 @@ export default function ProfilePage() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Theme</label>
+                    <label className="block mb-2 text-sm font-medium text-gray-700">Theme</label>
                     <select
                       value={profile.preferences.theme}
                       onChange={(e) => setProfile({
                         ...profile, 
                         preferences: {...profile.preferences, theme: e.target.value as 'light' | 'dark' | 'auto'}
                       })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     >
                       <option value="light">Light</option>
                       <option value="dark">Dark</option>
@@ -264,7 +264,7 @@ export default function ProfilePage() {
                   <button
                     type="submit"
                     disabled={saving}
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
+                    className="px-6 py-3 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {saving ? 'Saving...' : 'Save Changes'}
                   </button>
@@ -275,15 +275,15 @@ export default function ProfilePage() {
 
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Notification Preferences</h2>
+            <div className="p-6 bg-white rounded-lg shadow">
+              <h2 className="mb-6 text-xl font-semibold text-gray-900">Notification Preferences</h2>
               <div className="space-y-6">
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex justify-between items-center p-4 rounded-lg border border-gray-200">
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">Email Notifications</h3>
                     <p className="text-sm text-gray-600">Receive updates about your issues via email</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="inline-flex relative items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={profile.notifications.email}
@@ -297,12 +297,12 @@ export default function ProfilePage() {
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex justify-between items-center p-4 rounded-lg border border-gray-200">
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">Push Notifications</h3>
                     <p className="text-sm text-gray-600">Get instant notifications in your browser</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="inline-flex relative items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={profile.notifications.push}
@@ -316,12 +316,12 @@ export default function ProfilePage() {
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                <div className="flex justify-between items-center p-4 rounded-lg border border-gray-200">
                   <div>
                     <h3 className="text-lg font-medium text-gray-900">SMS Notifications</h3>
                     <p className="text-sm text-gray-600">Receive urgent updates via text message</p>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
+                  <label className="inline-flex relative items-center cursor-pointer">
                     <input
                       type="checkbox"
                       checked={profile.notifications.sms}
@@ -339,7 +339,7 @@ export default function ProfilePage() {
                   <button
                     onClick={handleProfileUpdate}
                     disabled={saving}
-                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
+                    className="px-6 py-3 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {saving ? 'Saving...' : 'Save Preferences'}
                   </button>
@@ -350,36 +350,36 @@ export default function ProfilePage() {
 
           {/* Security Tab */}
           {activeTab === 'security' && (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Security Settings</h2>
+            <div className="p-6 bg-white rounded-lg shadow">
+              <h2 className="mb-6 text-xl font-semibold text-gray-900">Security Settings</h2>
               <div className="space-y-6">
-                <div className="border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Change Password</h3>
+                <div className="p-6 rounded-lg border border-gray-200">
+                  <h3 className="mb-4 text-lg font-medium text-gray-900">Change Password</h3>
                   <form onSubmit={handlePasswordChange} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                      <label className="block mb-2 text-sm font-medium text-gray-700">Current Password</label>
                       <input
                         type="password"
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                      <label className="block mb-2 text-sm font-medium text-gray-700">New Password</label>
                       <input
                         type="password"
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                      <label className="block mb-2 text-sm font-medium text-gray-700">Confirm New Password</label>
                       <input
                         type="password"
                         required
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        className="px-4 py-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
                     </div>
                     
@@ -387,7 +387,7 @@ export default function ProfilePage() {
                       <button
                         type="submit"
                         disabled={saving}
-                        className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50"
+                        className="px-6 py-3 font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                       >
                         {saving ? 'Changing...' : 'Change Password'}
                       </button>
@@ -395,11 +395,11 @@ export default function ProfilePage() {
                   </form>
                 </div>
 
-                <div className="border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Account Actions</h3>
+                <div className="p-6 rounded-lg border border-gray-200">
+                  <h3 className="mb-4 text-lg font-medium text-gray-900">Account Actions</h3>
                   <div className="space-y-4">
-                    <button className="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center justify-between">
+                    <button className="p-4 w-full text-left rounded-lg border border-gray-200 transition-colors hover:bg-gray-50">
+                      <div className="flex justify-between items-center">
                         <div>
                           <h4 className="text-sm font-medium text-gray-900">Download My Data</h4>
                           <p className="text-sm text-gray-600">Export all your data and information</p>
@@ -410,8 +410,8 @@ export default function ProfilePage() {
                       </div>
                     </button>
                     
-                    <button className="w-full text-left p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex items-center justify-between">
+                    <button className="p-4 w-full text-left rounded-lg border border-gray-200 transition-colors hover:bg-gray-50">
+                      <div className="flex justify-between items-center">
                         <div>
                           <h4 className="text-sm font-medium text-gray-900">Delete Account</h4>
                           <p className="text-sm text-gray-600">Permanently delete your account and data</p>

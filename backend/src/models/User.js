@@ -6,6 +6,17 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ['resident', 'admin'], required: true },
+  status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
+  createdAt: { type: Date, default: Date.now },
+  lastLogin: { type: Date },
+  preferences: {
+    notifications: {
+      email: { type: Boolean, default: true },
+      sms: { type: Boolean, default: false },
+      push: { type: Boolean, default: false }
+    },
+    theme: { type: String, enum: ['light', 'dark'], default: 'light' }
+  },
 });
 
 UserSchema.pre('save', async function (next) {

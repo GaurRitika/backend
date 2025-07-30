@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
-import { apiUtils } from '../../utils/api';
+import { apiUtils, residentAPI } from '../../utils/api';
 
 interface Resident {
   _id: string;
   name: string;
   email: string;
-  joinDate: string;
-  lastActive: string;
+  createdAt: string;
+  lastLogin?: string;
   issueCount: number;
+  resolvedCount: number;
+  resolutionRate: string;
   status: 'active' | 'inactive' | 'suspended';
-  apartment: string;
-  phone?: string;
 }
 
 export default function ResidentsPage() {
@@ -26,8 +26,7 @@ export default function ResidentsPage() {
   const [newResident, setNewResident] = useState({
     name: '',
     email: '',
-    apartment: '',
-    phone: ''
+    password: ''
   });
   const router = useRouter();
 
@@ -54,78 +53,14 @@ export default function ResidentsPage() {
   const fetchResidents = async () => {
     try {
       setLoading(true);
+      setError('');
       
-      // Mock data - in real app, this would come from API
-      const mockResidents: Resident[] = [
-        {
-          _id: '1',
-          name: 'Sarah Johnson',
-          email: 'sarah.johnson@email.com',
-          joinDate: '2023-01-15',
-          lastActive: '2024-01-15',
-          issueCount: 12,
-          status: 'active',
-          apartment: 'A-101',
-          phone: '+1 (555) 123-4567'
-        },
-        {
-          _id: '2',
-          name: 'Mike Chen',
-          email: 'mike.chen@email.com',
-          joinDate: '2023-03-20',
-          lastActive: '2024-01-14',
-          issueCount: 9,
-          status: 'active',
-          apartment: 'B-205',
-          phone: '+1 (555) 234-5678'
-        },
-        {
-          _id: '3',
-          name: 'Emily Davis',
-          email: 'emily.davis@email.com',
-          joinDate: '2023-02-10',
-          lastActive: '2024-01-13',
-          issueCount: 8,
-          status: 'active',
-          apartment: 'C-302',
-          phone: '+1 (555) 345-6789'
-        },
-        {
-          _id: '4',
-          name: 'David Wilson',
-          email: 'david.wilson@email.com',
-          joinDate: '2023-04-05',
-          lastActive: '2024-01-12',
-          issueCount: 7,
-          status: 'inactive',
-          apartment: 'A-203',
-          phone: '+1 (555) 456-7890'
-        },
-        {
-          _id: '5',
-          name: 'Lisa Brown',
-          email: 'lisa.brown@email.com',
-          joinDate: '2023-01-30',
-          lastActive: '2024-01-11',
-          issueCount: 6,
-          status: 'active',
-          apartment: 'B-104',
-          phone: '+1 (555) 567-8901'
-        },
-        {
-          _id: '6',
-          name: 'John Smith',
-          email: 'john.smith@email.com',
-          joinDate: '2023-05-15',
-          lastActive: '2024-01-10',
-          issueCount: 15,
-          status: 'suspended',
-          apartment: 'C-401',
-          phone: '+1 (555) 678-9012'
-        }
-      ];
-
-      setResidents(mockResidents);
+      const response = await residentAPI.getAllResidents({
+        status: statusFilter || undefined,
+        search: searchTerm || undefined
+      });
+      
+      setResidents(response.residents);
     } catch (error) {
       console.error('Error fetching residents:', error);
       setError('Failed to fetch residents');
@@ -152,25 +87,39 @@ export default function ResidentsPage() {
     }
   };
 
-  const filteredResidents = residents.filter(resident => {
-    const matchesSearch = resident.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resident.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         resident.apartment.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = !statusFilter || resident.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Refetch residents when filters change
+  useEffect(() => {
+    if (user) {
+      fetchResidents();
+    }
+  }, [statusFilter, searchTerm]);
+
+  const filteredResidents = residents;
 
   const handleAddResident = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In real app, this would call API to add resident
-    console.log('Adding resident:', newResident);
-    setShowAddResident(false);
-    setNewResident({ name: '', email: '', apartment: '', phone: '' });
+    try {
+      setLoading(true);
+      await residentAPI.createResident(newResident);
+      setShowAddResident(false);
+      setNewResident({ name: '', email: '', password: '' });
+      fetchResidents(); // Refresh the list
+    } catch (error) {
+      console.error('Error adding resident:', error);
+      setError('Failed to add resident');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStatusChange = async (residentId: string, newStatus: string) => {
-    // In real app, this would call API to update resident status
-    console.log('Updating resident status:', residentId, newStatus);
+    try {
+      await residentAPI.updateResidentStatus(residentId, newStatus);
+      fetchResidents(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating resident status:', error);
+      setError('Failed to update resident status');
+    }
   };
 
   if (!user) return null;
@@ -322,7 +271,9 @@ export default function ResidentsPage() {
                         <div>
                           <h3 className="text-lg font-medium text-gray-900">{resident.name}</h3>
                           <p className="text-sm text-gray-600">{resident.email}</p>
-                          <p className="text-xs text-gray-500">Apartment {resident.apartment}</p>
+                          <p className="text-xs text-gray-500">
+                            {resident.issueCount} issues • {resident.resolutionRate}% resolved
+                          </p>
                         </div>
                       </div>
                       
@@ -334,7 +285,7 @@ export default function ResidentsPage() {
                             </span>
                           </div>
                           <p className="text-sm text-gray-600 mt-1">
-                            {resident.issueCount} issues • Joined {new Date(resident.joinDate).toLocaleDateString()}
+                            Joined {new Date(resident.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                         
@@ -398,25 +349,14 @@ export default function ResidentsPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Apartment</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                   <input
-                    type="text"
-                    value={newResident.apartment}
-                    onChange={(e) => setNewResident({...newResident, apartment: e.target.value})}
+                    type="password"
+                    value={newResident.password}
+                    onChange={(e) => setNewResident({...newResident, password: e.target.value})}
                     required
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    placeholder="e.g., A-101"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone (Optional)</label>
-                  <input
-                    type="tel"
-                    value={newResident.phone}
-                    onChange={(e) => setNewResident({...newResident, phone: e.target.value})}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                    placeholder="Enter phone number"
+                    placeholder="Enter password"
                   />
                 </div>
                 

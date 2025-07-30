@@ -1,18 +1,37 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { apiUtils } from '../utils/api';
+import { apiUtils, notificationAPI } from '../utils/api';
 
 export default function Navbar() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Array<{ message: string; time: string }>>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
 
   useEffect(() => {
     const userInfo = apiUtils.getUserFromToken();
     setUser(userInfo);
+    
+    // Fetch notifications if user is authenticated
+    if (userInfo) {
+      fetchNotifications();
+    }
   }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await notificationAPI.getNotifications({ limit: 5, unreadOnly: true });
+      setUnreadCount(data.unreadCount);
+      setNotifications(data.notifications.slice(0, 3).map(n => ({
+        message: n.title,
+        time: new Date(n.createdAt).toLocaleDateString()
+      })));
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  };
 
   const handleLogout = () => {
     apiUtils.logout();
@@ -80,6 +99,21 @@ export default function Navbar() {
                     >
                       Community
                     </button>
+                    <button
+                      onClick={() => router.push('/resident/notifications')}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/resident/notifications') 
+                          ? 'bg-indigo-100 text-indigo-700' 
+                          : 'text-gray-700 hover:text-indigo-600 hover:bg-indigo-50'
+                      }`}
+                    >
+                      Notifications
+                      {unreadCount > 0 && (
+                        <span className="ml-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
                   </>
                 )}
                 {user.role === 'admin' && (
@@ -92,7 +126,7 @@ export default function Navbar() {
                           : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
                       }`}
                     >
-                      Dashboard
+              Dashboard
                     </button>
                     <button
                       onClick={() => router.push('/admin/issues')}
@@ -123,6 +157,16 @@ export default function Navbar() {
                       }`}
                     >
                       Analytics
+                    </button>
+                    <button
+                      onClick={() => router.push('/admin/notifications')}
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        isActive('/admin/notifications') 
+                          ? 'bg-orange-100 text-orange-700' 
+                          : 'text-gray-700 hover:text-orange-600 hover:bg-orange-50'
+                      }`}
+                    >
+                      Notifications
                     </button>
                   </>
                 )}
@@ -164,9 +208,9 @@ export default function Navbar() {
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5v-5zM10.5 3.75a6 6 0 00-6 6v3.75l-2.25 2.25V19.5h12.5V15.75L16.5 13.5V9.75a6 6 0 00-6-6z" />
                     </svg>
-                    {notifications.length > 0 && (
+                    {unreadCount > 0 && (
                       <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                        {notifications.length}
+                        {unreadCount}
                       </span>
                     )}
                   </button>
@@ -183,12 +227,25 @@ export default function Navbar() {
                             No new notifications
                           </div>
                         ) : (
-                          notifications.map((notification, index) => (
-                            <div key={index} className="p-4 border-b border-gray-100 hover:bg-gray-50">
-                              <p className="text-sm text-gray-900">{notification.message}</p>
-                              <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                          <>
+                            {notifications.map((notification, index) => (
+                              <div key={index} className="p-4 border-b border-gray-100 hover:bg-gray-50">
+                                <p className="text-sm text-gray-900">{notification.message}</p>
+                                <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
+                              </div>
+                            ))}
+                            <div className="p-4 border-t border-gray-200">
+                              <button
+                                onClick={() => {
+                                  router.push(user?.role === 'admin' ? '/admin/notifications' : '/resident/notifications');
+                                  setShowNotifications(false);
+                                }}
+                                className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                              >
+                                View all notifications →
+                              </button>
                             </div>
-                          ))
+                          </>
                         )}
                       </div>
                     </div>
@@ -264,9 +321,9 @@ export default function Navbar() {
                   className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
                 >
                   Sign Up
-                </button>
-              </div>
-            )}
+            </button>
+          </div>
+        )}
           </div>
         </div>
       </div>
