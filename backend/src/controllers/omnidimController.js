@@ -71,7 +71,8 @@ exports.handleOmniDIMWebhook = async (req, res) => {
         email: `voice_${phone_number.replace(/\D/g, '')}@community.com`,
         phone: phone_number,
         role: 'resident',
-        isVoiceCallUser: true
+        isVoiceCallUser: true,
+        password: "tempPassword123" // Add default password for voice users
       });
       await resident.save();
     }
