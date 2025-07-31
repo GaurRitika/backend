@@ -196,7 +196,21 @@ export default function ResidentDashboard() {
 
             {/* Voice Support Button */}
             <button
-              onClick={() => window.open("https://widget.omnidim.io/8339", "_blank")}
+              onClick={() => {
+                // Load and initialize OmniDIM widget
+                const script = document.createElement('script');
+                script.id = 'omnidimension-web-widget';
+                script.async = true;
+                script.src = 'https://backend.omnidim.io/web_widget.js?secret_key=282035f2e410a1a69bd4e73bb8ade8bf';
+                
+                // Remove existing script if present
+                const existingScript = document.getElementById('omnidimension-web-widget');
+                if (existingScript) {
+                  existingScript.remove();
+                }
+                
+                document.head.appendChild(script);
+              }}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center"
             >
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

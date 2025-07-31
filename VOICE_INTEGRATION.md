@@ -64,9 +64,9 @@ BASE_URL=http://localhost:5000  # Your backend URL for webhooks
 
 ### OmniDIM Setup
 
-1. Get your OmniDIM API credentials
+1. Get your OmniDIM API credentials and secret key
 2. Configure your OmniDIM agent to send webhooks to: `{BASE_URL}/api/omnidim/webhook`
-3. Update the widget URL in resident dashboard if needed (currently: `https://widget.omnidim.io/8339`)
+3. The widget script is already configured in resident dashboard: `https://backend.omnidim.io/web_widget.js?secret_key=282035f2e410a1a69bd4e73bb8ade8bf`
 
 ## Data Flow
 
@@ -149,6 +149,7 @@ const priorityMapping = {
 3. Ensure database connection is working
 
 ### Voice Widget Not Opening
-1. Check widget URL is correct
-2. Verify OmniDIM widget ID
-3. Check browser popup blockers
+1. Check secret key is correct in the script URL
+2. Verify OmniDIM backend is accessible
+3. Check browser console for script loading errors
+4. Ensure JavaScript is enabled in browser
