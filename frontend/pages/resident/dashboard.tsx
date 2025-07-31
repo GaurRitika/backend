@@ -183,7 +183,7 @@ export default function ResidentDashboard() {
           </div>
 
           {/* Actions */}
-          <div className="mb-8">
+          <div className="mb-8 flex flex-col sm:flex-row gap-4">
             <button
               onClick={() => setShowNewIssueForm(true)}
               className="bg-indigo-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-indigo-700 transition duration-200 flex items-center"
@@ -192,6 +192,17 @@ export default function ResidentDashboard() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
               Raise New Issue
+            </button>
+
+            {/* Voice Support Button */}
+            <button
+              onClick={() => window.open("https://widget.omnidim.io/8339", "_blank")}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+              Voice Support
             </button>
           </div>
 

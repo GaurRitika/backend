@@ -13,6 +13,17 @@ interface Issue {
   createdAt: string;
   updatedAt: string;
   adminNotes?: string;
+  source?: 'web' | 'voice_call';
+  voiceCallData?: {
+    callId?: string;
+    agentId?: string;
+    phoneNumber?: string;
+    callDuration?: number;
+    conversationSummary?: string;
+    extractedVariables?: any;
+    issueType?: string;
+    location?: string;
+  };
   resident: {
     _id: string;
     name: string;
@@ -322,12 +333,45 @@ export default function AdminDashboard() {
                           <span>By: {issue.resident.name}</span>
                           <span>Category: {issue.category}</span>
                           <span>Created: {new Date(issue.createdAt).toLocaleDateString()}</span>
+                          {issue.source === 'voice_call' && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              Voice Call
+                            </span>
+                          )}
                         </div>
                         {issue.adminNotes && (
                           <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                             <p className="text-sm text-blue-800">
                               <strong>Admin Notes:</strong> {issue.adminNotes}
                             </p>
+                          </div>
+                        )}
+                        {issue.source === 'voice_call' && issue.voiceCallData && (
+                          <div className="mt-3 p-3 bg-green-50 rounded-lg">
+                            <p className="text-sm text-green-800 font-medium mb-2">Voice Call Details:</p>
+                            <div className="grid grid-cols-2 gap-2 text-xs text-green-700">
+                              {issue.voiceCallData.phoneNumber && (
+                                <div><strong>Phone:</strong> {issue.voiceCallData.phoneNumber}</div>
+                              )}
+                              {issue.voiceCallData.callDuration && (
+                                <div><strong>Duration:</strong> {Math.round(issue.voiceCallData.callDuration / 60)}m</div>
+                              )}
+                              {issue.voiceCallData.location && (
+                                <div><strong>Location:</strong> {issue.voiceCallData.location}</div>
+                              )}
+                              {issue.voiceCallData.issueType && (
+                                <div><strong>Type:</strong> {issue.voiceCallData.issueType.replace(/_/g, ' ')}</div>
+                              )}
+                            </div>
+                            {issue.voiceCallData.conversationSummary && (
+                              <div className="mt-2">
+                                <strong className="text-xs text-green-800">Summary:</strong>
+                                <p className="text-xs text-green-700 mt-1">{issue.voiceCallData.conversationSummary}</p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
