@@ -46,6 +46,21 @@ const IssueSchema = new mongoose.Schema({
   },
   resolvedAt: {
     type: Date
+  },
+  source: {
+    type: String,
+    enum: ['web', 'voice_call'],
+    default: 'web'
+  },
+  voiceCallData: {
+    callId: String,
+    agentId: String,
+    phoneNumber: String,
+    callDuration: Number,
+    conversationSummary: String,
+    extractedVariables: mongoose.Schema.Types.Mixed,
+    issueType: String,
+    location: String
   }
 }, {
   timestamps: true
