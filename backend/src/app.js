@@ -9,6 +9,7 @@ const analyticsRoutes = require('./routes/analyticsRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const announcementRoutes = require('./routes/announcementRoutes');
+const omnidimRoutes = require('./routes/omnidimRoutes');
 
 dotenv.config();
 
@@ -32,6 +33,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/announcements', announcementRoutes);
+app.use('/api/omnidim', omnidimRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

@@ -9,6 +9,7 @@ const UserSchema = new mongoose.Schema({
   status: { type: String, enum: ['active', 'inactive', 'suspended'], default: 'active' },
   createdAt: { type: Date, default: Date.now },
   lastLogin: { type: Date },
+  phone: { type: String },
   preferences: {
     notifications: {
       email: { type: Boolean, default: true },
@@ -17,6 +18,7 @@ const UserSchema = new mongoose.Schema({
     },
     theme: { type: String, enum: ['light', 'dark'], default: 'light' }
   },
+  isVoiceCallUser: { type: Boolean, default: false }
 });
 
 UserSchema.pre('save', async function (next) {
