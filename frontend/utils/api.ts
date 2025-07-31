@@ -1143,3 +1143,63 @@ export const apiUtils = {
     }
   },
 }; 
+
+// OmniDIM API functions
+export const omnidimAPI = {
+  // Initiate voice call
+  initiateCall: async (data: {
+    phone_number: string;
+    resident_id?: string;
+    issue_id?: string;
+  }): Promise<{
+    message: string;
+    call_data: any;
+  }> => {
+    return apiRequest('/api/omnidim/initiate-call', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }) as Promise<{
+      message: string;
+      call_data: any;
+    }>;
+  },
+
+  // Get voice call statistics
+  getVoiceCallStats: async (): Promise<{
+    totalVoiceCalls: number;
+    callsByCategory: Record<string, number>;
+    callsByStatus: Record<string, number>;
+    averageCallDuration: number;
+    recentCalls: Array<{
+      _id: string;
+      title: string;
+      category: string;
+      status: string;
+      createdAt: string;
+      voiceCallData: {
+        callId: string;
+        phoneNumber: string;
+        callDuration: number;
+      };
+    }>;
+  }> => {
+    return apiRequest('/api/omnidim/stats') as Promise<{
+      totalVoiceCalls: number;
+      callsByCategory: Record<string, number>;
+      callsByStatus: Record<string, number>;
+      averageCallDuration: number;
+      recentCalls: Array<{
+        _id: string;
+        title: string;
+        category: string;
+        status: string;
+        createdAt: string;
+        voiceCallData: {
+          callId: string;
+          phoneNumber: string;
+          callDuration: number;
+        };
+      }>;
+    }>;
+  },
+};

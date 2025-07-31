@@ -32,6 +32,9 @@ interface Stats {
   inProgressIssues: number;
 }
 
+ 
+
+
 export default function AdminDashboard() {
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -48,6 +51,9 @@ export default function AdminDashboard() {
     status: '',
     category: ''
   });
+  const [showInitiateCallModal, setShowInitiateCallModal] = useState(false);
+  const [callForm, setCallForm] = useState({ phone_number: '' });
+  const [initiatingCall, setInitiatingCall] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -133,6 +139,38 @@ export default function AdminDashboard() {
       .then(response => setIssues(response.issues || []))
       .catch(err => setError(err.message));
   };
+
+  const handleInitiateCall = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInitiatingCall(true);
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/omnidim/initiate-call`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` 
+        },
+        body: JSON.stringify(callForm)
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to initiate call');
+      }
+      
+      alert('Call initiated successfully!');
+      setShowInitiateCallModal(false);
+      setCallForm({ phone_number: '' });
+    } catch (error) {
+      console.error('Error initiating call:', error);
+      alert(`Failed to initiate call: \${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setInitiatingCall(false);
+    }
+  };
+
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -234,6 +272,36 @@ export default function AdminDashboard() {
                   <p className="text-sm font-medium text-gray-600">Resolved</p>
                   <p className="text-2xl font-bold text-gray-900">{stats.resolvedIssues}</p>
                 </div>
+              </div>
+            </div>
+          </div>
+
+
+           {/* Voice Call Controls */}
+           <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Voice Support</h3>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <button
+                  onClick={() => setShowInitiateCallModal(true)}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  Initiate Voice Call
+                </button>
+              </div>
+              <div className="flex-1">
+                <button
+                  onClick={() => router.push('/admin/voice-calls')}
+                  className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition duration-200 flex items-center"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  View Voice Call History
+                </button>
               </div>
             </div>
           </div>
@@ -355,6 +423,46 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
+
+        {/* Initiate Call Modal */}
+        {showInitiateCallModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Initiate Voice Call</h2>
+              <form onSubmit={handleInitiateCall} className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                  <input
+                    type="tel"
+                    value={callForm.phone_number}
+                    onChange={(e) => setCallForm({...callForm, phone_number: e.target.value})}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    placeholder="+1234567890"
+                  />
+                </div>
+                
+                <div className="flex space-x-4">
+                  <button
+                    type="submit"
+                    disabled={initiatingCall}
+                    className="flex-1 bg-orange-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-orange-700 disabled:opacity-50"
+                  >
+                    {initiatingCall ? 'Initiating...' : 'Start Call'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowInitiateCallModal(false)}
+                    className="flex-1 bg-gray-300 text-gray-700 py-3 px-4 rounded-lg font-semibold hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
       </div>
     </>
   );
