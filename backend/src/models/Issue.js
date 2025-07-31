@@ -49,7 +49,7 @@ const IssueSchema = new mongoose.Schema({
   },
   source: {
     type: String,
-    enum: ['web', 'voice_call', 'mobile_app'],
+    enum: ['web', 'voice_call'],
     default: 'web'
   },
   voiceCallData: {

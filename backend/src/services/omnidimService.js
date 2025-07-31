@@ -134,4 +134,4 @@ class OmniDIMService {
   }
 }
 
-module.exports = new OmniDIMService(); 
+module.exports = new OmniDIMService();
