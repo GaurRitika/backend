@@ -18,18 +18,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     }
 
     const { 
-    //   issue_type, 
-    //   location, 
-    //   description, 
-    //   phone_number,
-    //   call_duration,
-    //   call_id,
-    //   agent_id,
-    //   conversation_summary,
-    //   extracted_variables 
-    // } = req.body;
 
-  // Extract data from the correct structure
     const callReport = req.body.call_report || {};
     const extractedVars = callReport.extracted_variables || {};
     
