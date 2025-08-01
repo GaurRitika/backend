@@ -1,3 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  * {
+    @apply border-gray-200;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+}
+
+@layer components {
+  /* Luxury Button Styles */
+  .btn-primary {
+    @apply btn-luxury text-white font-semibold py-3 px-6 rounded-xl;
+  }
+  
+  .btn-secondary {
+    @apply bg-gradient-to-r from-secondary-500 to-secondary-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+  }
+  
+  .btn-ghost {
+    @apply bg-white/10 backdrop-blur-sm border border-white/20 text-gray-700 font-medium py-3 px-6 rounded-xl hover:bg-white/20 transition-all duration-300;
+  }
+  
+  /* Luxury Card Styles */
+  .card {
+    @apply card-luxury rounded-2xl p-6 transition-all duration-300 hover:shadow-luxury;
+  }
+  
+  .card-dark {
+    @apply bg-gray-900/95 backdrop-blur-20 border border-gray-700/50 rounded-2xl p-6 shadow-glass;
+  }
+  
+  /* Form Input Styles */
+  .input-luxury {
+    @apply w-full px-4 py-3 rounded-xl border border-gray-300 bg-white/80 backdrop-blur-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition-all duration-300 placeholder-gray-400;
+  }
+  
+  .input-luxury:focus {
+    @apply outline-none shadow-glow;
+  }
+  
+  /* Navigation Styles */
+  .nav-link {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-300 hover:bg-white/10 hover:backdrop-blur-sm;
+  }
+  
+  .nav-link-active {
+    @apply bg-primary-500/10 text-primary-700 backdrop-blur-sm;
+  }
+  
+  /* Status Badge Styles */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  }
+  
+  .badge-success {
+    @apply bg-success-100 text-success-700 border border-success-200;
+  }
+  
+  .badge-warning {
+    @apply bg-warning-100 text-warning-700 border border-warning-200;
+  }
+  
+  .badge-error {
+    @apply bg-error-100 text-error-700 border border-error-200;
+  }
+  
+  .badge-info {
+    @apply bg-primary-100 text-primary-700 border border-primary-200;
+  }
+  
+  /* Loading Animation */
+  .loading-spinner {
+    @apply inline-block w-6 h-6 border-2 border-gray-300 border-t-primary-600 rounded-full animate-spin;
+  }
+  
+  /* Gradient Text */
+  .text-luxury {
+    @apply text-gradient-primary font-bold;
+  }
+  
+  /* Modal Styles */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4;
+  }
+  
+  .modal-content {
+    @apply card-luxury max-w-md w-full animate-scale-in;
+  }
+  
+  /* Hover Effects */
+  .hover-glow:hover {
+    @apply shadow-glow;
+  }
+  
+  .hover-scale:hover {
+    @apply scale-105;
+  }
+}
+
+@layer utilities {
+  /* Custom Scrollbar */
+  .scrollbar-luxury::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .scrollbar-luxury::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+  }
+  
+  .scrollbar-luxury::-webkit-scrollbar-thumb {
+    @apply bg-primary-400 rounded-full hover:bg-primary-500;
+  }
+  
+  /* Background Patterns */
+  .bg-pattern-dots {
+    background-image: radial-gradient(circle, rgba(124, 109, 242, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .bg-pattern-grid {
+    background-image: linear-gradient(rgba(124, 109, 242, 0.1) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(124, 109, 242, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  /* Text Selection */
+  ::selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+  
+  ::-moz-selection {
+    @apply bg-primary-200 text-primary-900;
+  }
+  
+  /* Focus Styles */
+  .focus-luxury:focus {
+    @apply outline-none ring-2 ring-primary-500/50 ring-offset-2;
+  }
+  
+  /* Animated Gradient Background */
+  .bg-animated-gradient {
+    background: linear-gradient(-45deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+  
+  /* Glass Card Variations */
+  .glass-card {
+    @apply bg-white/20 backdrop-blur-lg border border-white/30 shadow-glass;
+  }
+  
+  .glass-card-dark {
+    @apply bg-black/20 backdrop-blur-lg border border-white/10 shadow-glass;
+  }
+}
+
+/* Custom Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
