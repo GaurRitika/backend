@@ -17,35 +17,48 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       });
     }
 
+    // Extract data from the new OmniDIM webhook structure
     const { 
-      issue_type, 
-      location, 
-      description, 
-      phone_number,
-      call_duration,
       call_id,
-      agent_id,
-      conversation_summary,
-      extracted_variables 
+      bot_id,
+      bot_name,
+      phone_number,
+      call_date,
+      user_email,
+      call_report 
     } = req.body;
+
+    // Extract variables from call_report structure
+    const extractedVariables = call_report?.extracted_variables || {};
+    const {
+      issue_type,
+      location,
+      description,
+      phone_number: extracted_phone
+    } = extractedVariables;
+
+    // Use the summary from call_report if description is not available
+    const summary = call_report?.summary || 'No summary available';
+    const conversationSummary = call_report?.conversation_summary || summary;
 
     console.log('OmniDIM Webhook parsed fields:', {
       issue_type,
       location,
       description,
-      phone_number,
+      phone_number: phone_number || extracted_phone,
       call_id
     });
 
     // Provide default values for missing fields
     const safeIssueType = issue_type || 'general_inquiry';
     const safeLocation = location || 'Not specified';
-    const safeDescription = description || 'Voice call issue - details to be updated';
-    const safePhoneNumber = phone_number || 'unknown';
+    const safeDescription = description || summary || 'Voice call issue - details to be updated';
+    const safePhoneNumber = phone_number || extracted_phone || 'unknown';
 
     // Map OmniDIM issue_type to our category system
     const categoryMapping = {
       'water_leakage': 'maintenance',
+      'water problem': 'maintenance',
       'electricity_problem': 'utilities',
       'noise_complaint': 'noise',
       'security_issue': 'security',
@@ -59,6 +72,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     // Determine priority based on issue type
     const priorityMapping = {
       'water_leakage': 'urgent',
+      'water problem': 'urgent',
       'electricity_problem': 'high',
       'security_issue': 'high',
       'noise_complaint': 'medium',
@@ -72,40 +86,38 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     // Create title from issue type and location - with null safety
     const title = `${safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${safeLocation}`;
 
-    // Find or create resident based on phone number
+    // Find or create resident based on phone number or email
     let resident = null;
     
     try {
-      // Only try to find/create resident if we have a valid phone number
-      if (safePhoneNumber && safePhoneNumber !== 'unknown') {
+      // Try to find resident by email first (if provided)
+      if (user_email && user_email !== 'unknown') {
+        resident = await User.findOne({ email: user_email, role: 'resident' });
+      }
+      
+      // If not found by email, try by phone number
+      if (!resident && safePhoneNumber && safePhoneNumber !== 'unknown') {
         resident = await User.findOne({ phone: safePhoneNumber, role: 'resident' });
+      }
+      
+      if (!resident) {
+        // Create a new resident
+        const residentName = user_email ? 
+          `Voice Call Resident (${user_email.split('@')[0]})` : 
+          `Voice Call Resident (${safePhoneNumber !== 'unknown' ? safePhoneNumber : 'Unknown'})`;
         
-        if (!resident) {
-          // Create a temporary resident if not found
-          const cleanPhoneNumber = safePhoneNumber.replace(/\D/g, '');
-          resident = new User({
-            name: `Voice Call Resident (${safePhoneNumber})`,
-            email: `voice_${cleanPhoneNumber || Date.now()}@community.com`,
-            phone: safePhoneNumber,
-            role: 'resident',
-            isVoiceCallUser: true,
-            password: "tempPassword123" // Add default password for voice users
-          });
-          await resident.save();
-          console.log('Created new voice call resident:', resident._id);
-        }
-      } else {
-        // Create a generic resident for unknown phone numbers
+        const residentEmail = user_email || `voice_${Date.now()}@community.com`;
+        
         resident = new User({
-          name: `Voice Call Resident (Unknown)`,
-          email: `voice_unknown_${Date.now()}@community.com`,
-          phone: 'unknown',
+          name: residentName,
+          email: residentEmail,
+          phone: safePhoneNumber,
           role: 'resident',
           isVoiceCallUser: true,
-          password: "tempPassword123"
+          password: "tempPassword123" // Add default password for voice users
         });
         await resident.save();
-        console.log('Created generic voice call resident:', resident._id);
+        console.log('Created new voice call resident:', resident._id);
       }
     } catch (userError) {
       console.error('Error creating/finding resident:', userError);
@@ -113,7 +125,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       resident = {
         _id: 'temp_' + Date.now(),
         name: 'Voice Call User',
-        email: 'temp@community.com',
+        email: user_email || 'temp@community.com',
         phone: safePhoneNumber
       };
     }
@@ -128,13 +140,18 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       source: 'voice_call',
       voiceCallData: {
         callId: call_id || 'unknown',
-        agentId: agent_id || 'unknown',
+        botId: bot_id || 'unknown',
+        botName: bot_name || 'Community Support Assistant',
         phoneNumber: safePhoneNumber,
-        callDuration: call_duration || 0,
-        conversationSummary: conversation_summary || 'No summary available',
-        extractedVariables: extracted_variables || {},
+        callDate: call_date || new Date().toISOString(),
+        userEmail: user_email || 'unknown',
+        conversationSummary: conversationSummary,
+        extractedVariables: extractedVariables,
         issueType: safeIssueType,
-        location: safeLocation
+        location: safeLocation,
+        fullConversation: call_report?.full_conversation || 'No conversation available',
+        sentiment: call_report?.sentiment || 'Neutral',
+        interactions: call_report?.interactions || []
       }
     });
 
@@ -170,7 +187,9 @@ exports.handleOmniDIMWebhook = async (req, res) => {
           issue_type: !!issue_type,
           location: !!location,
           description: !!description,
-          phone_number: !!phone_number
+          phone_number: !!safePhoneNumber,
+          user_email: !!user_email,
+          call_report: !!call_report
         }
       }
     });

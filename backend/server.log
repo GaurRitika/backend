@@ -1,7 +1,42 @@
 nohup: ignoring input
-[dotenv@17.2.1] injecting env (7) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
-(node:9158) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+[dotenv@17.2.1] injecting env (7) from .env -- tip: 📡 auto-backup env with Radar: https://dotenvx.com/radar
+(node:12967) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:9158) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:12967) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 Server running on port 5000
 MongoDB connected
+OmniDIM Webhook received - Full request body: {
+  "call_id": 54940,
+  "bot_id": 8339,
+  "bot_name": "Community Support Assistant",
+  "phone_number": "",
+  "call_date": "2025-08-01 16:51:28",
+  "user_email": "ritika.gaur2005@gmail.com",
+  "call_report": {
+    "summary": "The user reported a water leakage issue in room 23. The agent acknowledged the issue and provided contact details of plumbers to the user. The issue was resolved.",
+    "sentiment": "Neutral",
+    "extracted_variables": {
+      "conversation_summary": "The user reported a water leakage problem in room 23 and requested plumber details. The agent provided a list of plumbers with their contact information.",
+      "description": "The user reported a water leakage issue. They asked the agent for plumber details to fix the problem. The agent provided a list of plumbers.",
+      "issue_type": "water problem",
+      "location": "Room no 23",
+      "phone_number": "Not provided"
+    }
+  }
+}
+Request headers: {
+  host: 'localhost:5000',
+  'user-agent': 'curl/8.12.1',
+  accept: '*/*',
+  'content-type': 'application/json',
+  'content-length': '916'
+}
+OmniDIM Webhook parsed fields: {
+  issue_type: 'water problem',
+  location: 'Room no 23',
+  description: 'The user reported a water leakage issue. They asked the agent for plumber details to fix the problem. The agent provided a list of plumbers.',
+  phone_number: 'Not provided',
+  call_id: 54940
+}
+Created new voice call resident: new ObjectId('688d09558f1e50c03afd44ff')
+Issue created from voice call: new ObjectId('688d09558f1e50c03afd4501')

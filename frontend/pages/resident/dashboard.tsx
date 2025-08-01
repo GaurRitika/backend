@@ -18,6 +18,22 @@ interface Issue {
     name: string;
     email: string;
   };
+  source?: string;
+  voiceCallData?: {
+    callId: string;
+    botId: string;
+    botName: string;
+    phoneNumber: string;
+    callDate: string;
+    userEmail: string;
+    conversationSummary: string;
+    extractedVariables: any;
+    issueType: string;
+    location: string;
+    fullConversation: string;
+    sentiment: string;
+    interactions: any[];
+  };
 }
 
 export default function ResidentDashboard() {
@@ -272,6 +288,37 @@ export default function ResidentDashboard() {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mb-3">{issue.description}</p>
+                        
+                        {/* Voice Call Details */}
+                        {issue.source === 'voice_call' && issue.voiceCallData && (
+                          <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                            <p className="text-sm text-green-800 font-medium mb-2">Voice Call Details:</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-green-700">
+                              {issue.voiceCallData.phoneNumber && issue.voiceCallData.phoneNumber !== 'unknown' && (
+                                <div><strong>Phone:</strong> {issue.voiceCallData.phoneNumber}</div>
+                              )}
+                              {issue.voiceCallData.location && issue.voiceCallData.location !== 'Not specified' && (
+                                <div><strong>Location:</strong> {issue.voiceCallData.location}</div>
+                              )}
+                              {issue.voiceCallData.issueType && (
+                                <div><strong>Type:</strong> {issue.voiceCallData.issueType.replace(/_/g, ' ')}</div>
+                              )}
+                              {issue.voiceCallData.sentiment && (
+                                <div><strong>Sentiment:</strong> {issue.voiceCallData.sentiment}</div>
+                              )}
+                              {issue.voiceCallData.callDate && (
+                                <div><strong>Call Date:</strong> {new Date(issue.voiceCallData.callDate).toLocaleString()}</div>
+                              )}
+                            </div>
+                            {issue.voiceCallData.conversationSummary && (
+                              <div className="mt-2">
+                                <p className="text-xs text-green-700 font-medium">Summary:</p>
+                                <p className="text-xs text-green-700 mt-1">{issue.voiceCallData.conversationSummary}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span>Category: {issue.category}</span>
                           <span>Created: {new Date(issue.createdAt).toLocaleDateString()}</span>
