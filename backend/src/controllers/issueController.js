@@ -68,57 +68,29 @@ exports.getAllIssues = async (req, res) => {
 // Get my issues (Resident only)
 exports.getMyIssues = async (req, res) => {
   try {
-    const residentId = req.user._id; // Use _id instead of id
+    const residentId = req.user._id;
     const { status, page = 1, limit = 10 } = req.query;
     
-    // Base query for issues directly assigned to this resident
-    let query = { resident: residentId };
-    if (status) query.status = status;
-
-    // Also include voice call issues from users with the same phone number
-    // This helps link voice call issues to the actual resident
+    let query;
+    
+    // If user has phone number, include voice call issues from same phone number
     if (req.user.phone) {
-      // Clean the phone number (remove non-digits)
-      const cleanUserPhone = req.user.phone.replace(/\D/g, '');
-      
-      // Find voice call users with the same phone number (considering different formats)
-      const voiceCallUsers = await User.find({
-        $and: [
-          { isVoiceCallUser: true },
-          {
-            $or: [
-              { phone: req.user.phone },
-              { phone: cleanUserPhone },
-              { phone: `+${cleanUserPhone}` },
-              { phone: { $regex: cleanUserPhone } }
-            ]
-          }
-        ]
+      // Get all residents (including voice call users) with same phone number
+      const samePhoneResidents = await User.find({
+        phone: req.user.phone,
+        role: 'resident'
       }).select('_id');
-
-      if (voiceCallUsers.length > 0) {
-        const voiceCallUserIds = voiceCallUsers.map(user => user._id);
-        
-        // Create a combined query using $or to include both direct issues and voice call issues
-        const combinedQuery = {
-          $or: [
-            { resident: residentId },
-            {
-              resident: { $in: voiceCallUserIds },
-              source: 'voice_call'
-            }
-          ]
-        };
-        
-        // Apply status filter to both parts of the query
-        if (status) {
-          combinedQuery.$or[0].status = status;
-          combinedQuery.$or[1].status = status;
-        }
-        
-        query = combinedQuery;
-      }
+      
+      const residentIds = samePhoneResidents.map(user => user._id);
+      
+      // Fetch issues for all residents with same phone number
+      query = { resident: { $in: residentIds } };
+    } else {
+      // No phone number, just get direct issues
+      query = { resident: residentId };
     }
+    
+    if (status) query.status = status;
 
     const issues = await Issue.find(query)
       .populate('assignedTo', 'name email')
