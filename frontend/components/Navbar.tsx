@@ -55,28 +55,29 @@ export default function Navbar() {
   const isActive = (path: string) => router.pathname === path;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass backdrop-blur-xl border-b border-white/20 shadow-glass">
-      <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass-card backdrop-blur-2xl border-b border-white/30 shadow-luxury-lg">
+      <div className="px-6 mx-auto max-w-7xl sm:px-8 lg:px-10">
+        <div className="flex justify-between h-24">
           
-          {/* Logo and Brand */}
+          {/* Enhanced Logo and Brand */}
           <div className="flex items-center">
             <div 
               onClick={() => router.push('/')}
               className="flex items-center cursor-pointer group"
             >
-              <div className="flex-shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:rotate-12">
-                <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-2xl flex items-center justify-center shadow-glow group-hover:shadow-glow-lg transition-all duration-300">
-                  <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 48 48">
+              <div className="flex-shrink-0 transition-all duration-500 group-hover:scale-110 group-hover:rotate-12">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-3xl flex items-center justify-center shadow-glow group-hover:shadow-glow-xl transition-all duration-500 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 animate-shimmer"></div>
+                  <svg className="w-8 h-8 text-white relative z-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 48 48">
                     <circle cx="24" cy="24" r="18" stroke="currentColor" strokeWidth="2" fill="none" className="animate-pulse-slow" />
                     <path d="M16 32c0-4 8-4 8-8s-8-4-8-8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                     <path d="M32 32c0-4-8-4-8-8s8-4 8-8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
                   </svg>
                 </div>
               </div>
-              <div className="ml-4">
-                <h1 className="text-2xl font-display font-bold text-luxury tracking-tight">SheBuilds</h1>
-                <p className="text-sm text-gray-600 font-medium">Community Support</p>
+              <div className="ml-5">
+                <h1 className="text-3xl font-display font-black text-gradient-primary tracking-tight text-shadow-luxury">SheBuilds</h1>
+                <p className="text-sm text-gray-600 font-semibold">Community Support</p>
               </div>
             </div>
           </div>
@@ -488,22 +489,23 @@ interface NavLinkProps {
 
 function NavLink({ children, onClick, isActive = false, icon, role = 'resident' }: NavLinkProps) {
   const activeClass = role === 'admin' 
-    ? 'bg-secondary-100 text-secondary-700 shadow-sm' 
-    : 'bg-primary-100 text-primary-700 shadow-sm';
+    ? 'bg-gradient-to-r from-secondary-500/20 to-secondary-600/20 text-secondary-700 border border-secondary-300/50 shadow-lg' 
+    : 'bg-gradient-to-r from-primary-500/20 to-primary-600/20 text-primary-700 border border-primary-300/50 shadow-lg';
   
   const hoverClass = role === 'admin'
-    ? 'hover:bg-secondary-50 hover:text-secondary-600'
-    : 'hover:bg-primary-50 hover:text-primary-600';
+    ? 'hover:bg-secondary-50 hover:text-secondary-600 hover:border-secondary-400/50'
+    : 'hover:bg-primary-50 hover:text-primary-600 hover:border-primary-400/50';
 
   return (
     <button
       onClick={onClick}
-      className={`flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 hover-lift ${
+      className={`flex items-center px-6 py-3 text-base font-semibold rounded-2xl transition-all duration-500 hover-lift relative overflow-hidden ${
         isActive ? activeClass : `text-gray-700 ${hoverClass}`
       }`}
     >
-      {icon && <span className="mr-2">{icon}</span>}
-      {children}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+      {icon && <span className="mr-3 relative z-10">{icon}</span>}
+      <span className="relative z-10">{children}</span>
     </button>
   );
 }
@@ -519,13 +521,14 @@ function MobileNavLink({ children, onClick, isActive = false }: MobileNavLinkPro
   return (
     <button
       onClick={onClick}
-      className={`block w-full text-left px-4 py-3 text-sm font-medium rounded-xl transition-all duration-300 ${
+      className={`block w-full text-left px-6 py-4 text-base font-semibold rounded-2xl transition-all duration-500 hover-lift relative overflow-hidden ${
         isActive 
-          ? 'bg-primary-100 text-primary-700' 
-          : 'text-gray-700 hover:bg-white/20 hover:text-primary-600'
+          ? 'bg-gradient-to-r from-primary-500/20 to-primary-600/20 text-primary-700 border border-primary-300/50 shadow-lg' 
+          : 'text-gray-700 hover:bg-white/20 hover:text-primary-600 hover:border-primary-400/50'
       }`}
     >
-      {children}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+      <span className="relative z-10">{children}</span>
     </button>
   );
 }
