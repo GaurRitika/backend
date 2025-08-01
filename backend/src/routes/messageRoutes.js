@@ -3,7 +3,7 @@ const router = express.Router();
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
 const User = require('../models/User');
-const auth = require('../middleware/auth');
+const { authenticateToken: auth } = require('../middleware/auth');
 
 // Get all conversations for the current user
 router.get('/conversations', auth, async (req, res) => {
