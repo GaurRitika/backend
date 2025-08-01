@@ -6,15 +6,39 @@ const omnidimService = require('../services/omnidimService');
 exports.handleOmniDIMWebhook = async (req, res) => {
   try {
     // Log the complete request for debugging
-    console.log('OmniDIM Webhook received - Full request body:', JSON.stringify(req.body, null, 2));
+    console.log('=== OMNIDIM WEBHOOK RECEIVED ===');
+    console.log('Full request body:', JSON.stringify(req.body, null, 2));
     console.log('Request headers:', req.headers);
+    console.log('Request method:', req.method);
+    console.log('Request URL:', req.url);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('================================');
     
     // Handle case where req.body might be empty or malformed
     if (!req.body || typeof req.body !== 'object') {
-      console.log('Invalid or empty request body received');
+      console.log('❌ Invalid or empty request body received');
       return res.status(400).json({
         message: 'Invalid request body. Expected JSON object with issue data.'
       });
+    }
+
+    // Log all top-level keys in the request body
+    console.log('📋 Top-level keys in request body:', Object.keys(req.body));
+    
+    // Check if call_report exists
+    if (req.body.call_report) {
+      console.log('✅ call_report found');
+      console.log('📋 call_report keys:', Object.keys(req.body.call_report));
+      
+      if (req.body.call_report.extracted_variables) {
+        console.log('✅ extracted_variables found');
+        console.log('📋 extracted_variables keys:', Object.keys(req.body.call_report.extracted_variables));
+        console.log('📋 extracted_variables content:', JSON.stringify(req.body.call_report.extracted_variables, null, 2));
+      } else {
+        console.log('❌ extracted_variables NOT found in call_report');
+      }
+    } else {
+      console.log('❌ call_report NOT found in request body');
     }
 
     // Extract data from the new OmniDIM webhook structure
