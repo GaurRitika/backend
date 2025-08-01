@@ -96,48 +96,60 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     const issueTypeFormatted = safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     const title = `${issueTypeFormatted} - ${safeLocation}`;
 
-    // Find or create resident based on phone number
+    // Find or create resident based on phone number (which might actually be email prefix)
     let resident = null;
     
     try {
-      // Only try to find/create resident if we have a valid phone number
+      // Only try to find/create resident if we have a valid identifier
       if (safePhoneNumber && safePhoneNumber !== 'unknown') {
-        // First, try to find existing resident (non-voice-call user) with same phone number
+        // First, try to find existing resident by email prefix
+        // The phone_number field might contain email prefix like 'ritika.gaur2005'
         resident = await User.findOne({ 
-          phone: safePhoneNumber, 
+          email: { $regex: `^${safePhoneNumber}` }, // Email starts with this identifier
           role: 'resident',
           isVoiceCallUser: { $ne: true }  // Find real residents, not voice call users
         });
         
         if (resident) {
-          console.log('Found existing resident for voice call:', resident._id, resident.name);
+          console.log('Found existing resident by email prefix for voice call:', resident._id, resident.name);
         } else {
-          // If no existing resident found, check for existing voice call user
+          // If no existing resident found by email, try by phone field
           resident = await User.findOne({ 
             phone: safePhoneNumber, 
             role: 'resident',
-            isVoiceCallUser: true 
+            isVoiceCallUser: { $ne: true }
           });
           
-          if (!resident) {
-            // Create a temporary resident if not found
-            const cleanPhoneNumber = safePhoneNumber.replace(/\D/g, '');
-            resident = new User({
-              name: `Voice Call Resident (${safePhoneNumber})`,
-              email: `voice_${cleanPhoneNumber || Date.now()}@community.com`,
-              phone: safePhoneNumber,
-              role: 'resident',
-              isVoiceCallUser: true,
-              password: "tempPassword123" // Add default password for voice users
-            });
-            await resident.save();
-            console.log('Created new voice call resident:', resident._id);
+          if (resident) {
+            console.log('Found existing resident by phone for voice call:', resident._id, resident.name);
           } else {
-            console.log('Found existing voice call user:', resident._id, resident.name);
+            // Check for existing voice call user
+            resident = await User.findOne({ 
+              phone: safePhoneNumber, 
+              role: 'resident',
+              isVoiceCallUser: true 
+            });
+            
+            if (!resident) {
+              // Create a temporary resident if not found
+              const cleanPhoneNumber = safePhoneNumber.replace(/\D/g, '');
+              resident = new User({
+                name: `Voice Call Resident (${safePhoneNumber})`,
+                email: `voice_${cleanPhoneNumber || Date.now()}@community.com`,
+                phone: safePhoneNumber,
+                role: 'resident',
+                isVoiceCallUser: true,
+                password: "tempPassword123" // Add default password for voice users
+              });
+              await resident.save();
+              console.log('Created new voice call resident:', resident._id);
+            } else {
+              console.log('Found existing voice call user:', resident._id, resident.name);
+            }
           }
         }
       } else {
-        // Create a generic resident for unknown phone numbers
+        // Create a generic resident for unknown identifiers
         resident = new User({
           name: `Voice Call Resident (Unknown)`,
           email: `voice_unknown_${Date.now()}@community.com`,
