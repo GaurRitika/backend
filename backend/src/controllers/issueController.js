@@ -73,23 +73,23 @@ exports.getMyIssues = async (req, res) => {
     
     let query;
     
-    // If user has phone number, include voice call issues from same phone number
+    // Get issues for current resident
+    let residentIds = [residentId];
+    
+    // If user has phone number, also include voice call users with same phone number
     if (req.user.phone) {
-      // Get all residents (including voice call users) with same phone number
-      const samePhoneResidents = await User.find({
+      const voiceCallUsers = await User.find({
         phone: req.user.phone,
+        isVoiceCallUser: true,
         role: 'resident'
       }).select('_id');
       
-      const residentIds = samePhoneResidents.map(user => user._id);
-      
-      // Fetch issues for all residents with same phone number
-      query = { resident: { $in: residentIds } };
-    } else {
-      // No phone number, just get direct issues
-      query = { resident: residentId };
+      const voiceCallUserIds = voiceCallUsers.map(user => user._id);
+      residentIds = [...residentIds, ...voiceCallUserIds];
     }
     
+    // Fetch issues for all matching residents
+    query = { resident: { $in: residentIds } };
     if (status) query.status = status;
 
     const issues = await Issue.find(query)
