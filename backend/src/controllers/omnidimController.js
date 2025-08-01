@@ -129,17 +129,22 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     let resident = null;
     
     try {
+      console.log('Looking for resident with email:', user_email);
+      
       // Try to find resident by email first (if provided)
       if (user_email && user_email !== 'unknown') {
         resident = await User.findOne({ email: user_email, role: 'resident' });
+        console.log('Found existing resident by email:', resident ? resident._id : 'Not found');
       }
       
       // If not found by email, try by phone number
-      if (!resident && safePhoneNumber && safePhoneNumber !== 'unknown') {
+      if (!resident && safePhoneNumber && safePhoneNumber !== 'unknown' && safePhoneNumber !== 'Not provided') {
         resident = await User.findOne({ phone: safePhoneNumber, role: 'resident' });
+        console.log('Found existing resident by phone:', resident ? resident._id : 'Not found');
       }
       
       if (!resident) {
+        console.log('Creating new resident for email:', user_email);
         // Create a new resident
         const residentName = user_email ? 
           `Voice Call Resident (${user_email.split('@')[0]})` : 
@@ -156,7 +161,9 @@ exports.handleOmniDIMWebhook = async (req, res) => {
           password: "tempPassword123" // Add default password for voice users
         });
         await resident.save();
-        console.log('Created new voice call resident:', resident._id);
+        console.log('Created new voice call resident:', resident._id, 'with email:', residentEmail);
+      } else {
+        console.log('Using existing resident:', resident._id, 'with email:', resident.email);
       }
     } catch (userError) {
       console.error('Error creating/finding resident:', userError);
