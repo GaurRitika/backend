@@ -78,7 +78,6 @@ export default function ResidentDashboard() {
     
     try {
       const response = await issueAPI.createIssue(newIssue);
-      console.log('New issue created:', response);
       
       // Add the new issue to the beginning of the list
       if (response.issue) {
@@ -93,7 +92,6 @@ export default function ResidentDashboard() {
         fetchMyIssues();
       }, 1000);
     } catch (err: unknown) {
-      console.error('Error creating issue:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);

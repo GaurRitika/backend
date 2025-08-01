@@ -5,7 +5,7 @@ const User = require('../models/User');
 exports.createIssue = async (req, res) => {
   try {
     const { title, description, category, priority } = req.body;
-    const residentId = req.user.id; // From auth middleware
+    const residentId = req.user._id; // Use _id instead of id
 
     if (!title || !description || !category) {
       return res.status(400).json({ message: 'Title, description, and category are required' });
@@ -68,7 +68,7 @@ exports.getAllIssues = async (req, res) => {
 // Get my issues (Resident only)
 exports.getMyIssues = async (req, res) => {
   try {
-    const residentId = req.user.id;
+    const residentId = req.user._id; // Use _id instead of id
     const { status, page = 1, limit = 10 } = req.query;
     
     let query = { resident: residentId };
@@ -99,7 +99,7 @@ exports.updateIssueStatus = async (req, res) => {
   try {
     const { issueId } = req.params;
     const { status, adminNotes, assignedTo } = req.body;
-    const adminId = req.user.id;
+    const adminId = req.user._id; // Use _id instead of id
 
     const issue = await Issue.findById(issueId);
     if (!issue) {
@@ -136,7 +136,7 @@ exports.updateIssueStatus = async (req, res) => {
 exports.getIssueById = async (req, res) => {
   try {
     const { issueId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id; // Use _id instead of id
     const userRole = req.user.role;
 
     const issue = await Issue.findById(issueId)
@@ -148,7 +148,7 @@ exports.getIssueById = async (req, res) => {
     }
 
     // Check if user has access to this issue
-    if (userRole === 'resident' && issue.resident._id.toString() !== userId) {
+    if (userRole === 'resident' && issue.resident._id.toString() !== userId.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
