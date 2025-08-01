@@ -59,12 +59,28 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     const categoryMapping = {
       'water_leakage': 'maintenance',
       'water problem': 'maintenance',
+      'water leak': 'maintenance',
+      'leakage': 'maintenance',
+      'plumbing': 'maintenance',
       'electricity_problem': 'utilities',
+      'electrical': 'utilities',
+      'power': 'utilities',
       'noise_complaint': 'noise',
+      'noise': 'noise',
+      'loud': 'noise',
       'security_issue': 'security',
+      'security': 'security',
+      'theft': 'security',
       'cleaning_request': 'cleaning',
+      'cleaning': 'cleaning',
+      'dirty': 'cleaning',
       'parking_issue': 'parking',
-      'general_inquiry': 'general'
+      'parking': 'parking',
+      'car': 'parking',
+      'general_inquiry': 'general',
+      'general': 'general',
+      'question': 'general',
+      'help': 'general'
     };
 
     const category = categoryMapping[safeIssueType] || 'general';
@@ -73,15 +89,38 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     const priorityMapping = {
       'water_leakage': 'urgent',
       'water problem': 'urgent',
+      'water leak': 'urgent',
+      'leakage': 'urgent',
+      'plumbing': 'urgent',
       'electricity_problem': 'high',
+      'electrical': 'high',
+      'power': 'high',
       'security_issue': 'high',
+      'security': 'high',
+      'theft': 'high',
       'noise_complaint': 'medium',
-      'cleaning_request': 'low',
+      'noise': 'medium',
+      'loud': 'medium',
       'parking_issue': 'medium',
-      'general_inquiry': 'low'
+      'parking': 'medium',
+      'car': 'medium',
+      'cleaning_request': 'low',
+      'cleaning': 'low',
+      'dirty': 'low',
+      'general_inquiry': 'low',
+      'general': 'low',
+      'question': 'low',
+      'help': 'low'
     };
 
     const priority = priorityMapping[safeIssueType] || 'medium';
+
+    console.log('Processing issue:', {
+      originalIssueType: issue_type,
+      safeIssueType: safeIssueType,
+      category: category,
+      priority: priority
+    });
 
     // Create title from issue type and location - with null safety
     const title = `${safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${safeLocation}`;

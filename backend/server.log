@@ -1,25 +1,25 @@
 nohup: ignoring input
-[dotenv@17.2.1] injecting env (7) from .env -- tip: 📡 auto-backup env with Radar: https://dotenvx.com/radar
-(node:12967) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+[dotenv@17.2.1] injecting env (7) from .env -- tip: 📡 observe env with Radar: https://dotenvx.com/radar
+(node:17415) [MONGODB DRIVER] Warning: useNewUrlParser is a deprecated option: useNewUrlParser has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:12967) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
+(node:17415) [MONGODB DRIVER] Warning: useUnifiedTopology is a deprecated option: useUnifiedTopology has no effect since Node.js Driver version 4.0.0 and will be removed in the next major version
 Server running on port 5000
 MongoDB connected
 OmniDIM Webhook received - Full request body: {
-  "call_id": 54940,
+  "call_id": 54941,
   "bot_id": 8339,
   "bot_name": "Community Support Assistant",
   "phone_number": "",
-  "call_date": "2025-08-01 16:51:28",
-  "user_email": "ritika.gaur2005@gmail.com",
+  "call_date": "2025-08-01 17:00:00",
+  "user_email": "john.doe@example.com",
   "call_report": {
-    "summary": "The user reported a water leakage issue in room 23. The agent acknowledged the issue and provided contact details of plumbers to the user. The issue was resolved.",
-    "sentiment": "Neutral",
+    "summary": "The user reported a noise complaint about loud music coming from apartment 45. The agent acknowledged the complaint and provided information about quiet hours.",
+    "sentiment": "Frustrated",
     "extracted_variables": {
-      "conversation_summary": "The user reported a water leakage problem in room 23 and requested plumber details. The agent provided a list of plumbers with their contact information.",
-      "description": "The user reported a water leakage issue. They asked the agent for plumber details to fix the problem. The agent provided a list of plumbers.",
-      "issue_type": "water problem",
-      "location": "Room no 23",
+      "conversation_summary": "The user reported excessive noise from apartment 45 and requested assistance.",
+      "description": "Loud music playing from apartment 45 during quiet hours",
+      "issue_type": "noise",
+      "location": "Apartment 45",
       "phone_number": "Not provided"
     }
   }
@@ -29,14 +29,59 @@ Request headers: {
   'user-agent': 'curl/8.12.1',
   accept: '*/*',
   'content-type': 'application/json',
-  'content-length': '916'
+  'content-length': '744'
 }
 OmniDIM Webhook parsed fields: {
-  issue_type: 'water problem',
-  location: 'Room no 23',
-  description: 'The user reported a water leakage issue. They asked the agent for plumber details to fix the problem. The agent provided a list of plumbers.',
+  issue_type: 'noise',
+  location: 'Apartment 45',
+  description: 'Loud music playing from apartment 45 during quiet hours',
   phone_number: 'Not provided',
-  call_id: 54940
+  call_id: 54941
 }
-Created new voice call resident: new ObjectId('688d09558f1e50c03afd44ff')
-Issue created from voice call: new ObjectId('688d09558f1e50c03afd4501')
+Processing issue: {
+  originalIssueType: 'noise',
+  safeIssueType: 'noise',
+  category: 'noise',
+  priority: 'medium'
+}
+Issue created from voice call: new ObjectId('688d1907fa9f729df1c5708c')
+OmniDIM Webhook received - Full request body: {
+  "call_id": 54942,
+  "bot_id": 8339,
+  "bot_name": "Community Support Assistant",
+  "phone_number": "",
+  "call_date": "2025-08-01 17:30:00",
+  "user_email": "sarah.smith@example.com",
+  "call_report": {
+    "summary": "The user reported an electrical problem with the lights in the hallway. The agent provided contact information for an electrician.",
+    "sentiment": "Concerned",
+    "extracted_variables": {
+      "conversation_summary": "The user reported electrical issues in the hallway and requested assistance.",
+      "description": "Lights in the hallway are not working properly",
+      "issue_type": "electrical",
+      "location": "Hallway",
+      "phone_number": "Not provided"
+    }
+  }
+}
+Request headers: {
+  host: 'localhost:5000',
+  'user-agent': 'curl/8.12.1',
+  accept: '*/*',
+  'content-type': 'application/json',
+  'content-length': '707'
+}
+OmniDIM Webhook parsed fields: {
+  issue_type: 'electrical',
+  location: 'Hallway',
+  description: 'Lights in the hallway are not working properly',
+  phone_number: 'Not provided',
+  call_id: 54942
+}
+Processing issue: {
+  originalIssueType: 'electrical',
+  safeIssueType: 'electrical',
+  category: 'utilities',
+  priority: 'high'
+}
+Issue created from voice call: new ObjectId('688d190efa9f729df1c57091')
