@@ -3,10 +3,10 @@ const router = express.Router();
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
 const User = require('../models/User');
-const auth = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
 
 // Get all conversations for the current user
-router.get('/conversations', auth, async (req, res) => {
+router.get('/conversations', authenticateToken, async (req, res) => {
   try {
     const conversations = await Conversation.find({
       participants: req.user.id
@@ -31,7 +31,7 @@ router.get('/conversations', auth, async (req, res) => {
 });
 
 // Get messages for a specific conversation
-router.get('/conversations/:conversationId/messages', auth, async (req, res) => {
+router.get('/conversations/:conversationId/messages', authenticateToken, async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { page = 1, limit = 50 } = req.query;
@@ -82,7 +82,7 @@ router.get('/conversations/:conversationId/messages', auth, async (req, res) => 
 });
 
 // Send a message
-router.post('/send', auth, async (req, res) => {
+router.post('/send', authenticateToken, async (req, res) => {
   try {
     const { receiverId, content, messageType = 'text', attachments = [] } = req.body;
 
@@ -139,7 +139,7 @@ router.post('/send', auth, async (req, res) => {
 });
 
 // Get all residents for community members list
-router.get('/residents', auth, async (req, res) => {
+router.get('/residents', authenticateToken, async (req, res) => {
   try {
     const residents = await User.find({ 
       role: 'resident', 
@@ -156,7 +156,7 @@ router.get('/residents', auth, async (req, res) => {
 });
 
 // Mark messages as read
-router.put('/mark-read/:senderId', auth, async (req, res) => {
+router.put('/mark-read/:senderId', authenticateToken, async (req, res) => {
   try {
     const { senderId } = req.params;
 
