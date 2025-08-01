@@ -18,23 +18,39 @@ exports.handleOmniDIMWebhook = async (req, res) => {
     }
 
     const { 
-      issue_type, 
-      location, 
-      description, 
-      phone_number,
-      call_duration,
-      call_id,
-      agent_id,
-      conversation_summary,
-      extracted_variables 
-    } = req.body;
+    //   issue_type, 
+    //   location, 
+    //   description, 
+    //   phone_number,
+    //   call_duration,
+    //   call_id,
+    //   agent_id,
+    //   conversation_summary,
+    //   extracted_variables 
+    // } = req.body;
+
+  // Extract data from the correct structure
+    const callReport = req.body.call_report || {};
+    const extractedVars = callReport.extracted_variables || {};
+    
+    // Get values from extracted_variables first, then fallback to root level
+    const issue_type = extractedVars.issue_type || req.body.issue_type;
+    const location = extractedVars.location || req.body.location;
+    const description = extractedVars.description || req.body.description;
+    const phone_number = extractedVars.phone_number || req.body.phone_number;
+    const call_duration = req.body.call_duration;
+    const call_id = req.body.call_id;
+    const agent_id = req.body.agent_id;
+    const conversation_summary = callReport.summary || req.body.conversation_summary;
+    const extracted_variables = extractedVars;
 
     console.log('OmniDIM Webhook parsed fields:', {
       issue_type,
       location,
       description,
       phone_number,
-      call_id
+      call_id,
+      conversation_summary
     });
 
     // Provide default values for missing fields
@@ -45,12 +61,22 @@ exports.handleOmniDIMWebhook = async (req, res) => {
 
     // Map OmniDIM issue_type to our category system
     const categoryMapping = {
-      'water_leakage': 'maintenance',
-      'electricity_problem': 'utilities',
+    'water_leakage': 'water',
+      'water_issue': 'water',
+      'power cut': 'electricity',
+      'power_cut': 'electricity',
+      'electricity_problem': 'electricity',
+      'electrical_issue': 'electrical',
+      'plumbing_issue': 'plumbing',
       'noise_complaint': 'noise',
       'security_issue': 'security',
       'cleaning_request': 'cleaning',
       'parking_issue': 'parking',
+        'maintenance_request': 'maintenance',
+      'appliance_issue': 'appliance',
+      'heating_issue': 'heating',
+      'cooling_issue': 'cooling',
+      'pest_control': 'pest_control',
       'general_inquiry': 'general'
     };
 
@@ -58,19 +84,34 @@ exports.handleOmniDIMWebhook = async (req, res) => {
 
     // Determine priority based on issue type
     const priorityMapping = {
-      'water_leakage': 'urgent',
+ 'water_leakage': 'high',
+      'water_issue': 'high',
+      'power cut': 'high',
+      'power_cut': 'high',
       'electricity_problem': 'high',
+      'electrical_issue': 'high',
+      'plumbing_issue': 'high',
       'security_issue': 'high',
       'noise_complaint': 'medium',
       'cleaning_request': 'low',
       'parking_issue': 'medium',
+      'maintenance_request': 'medium',
+      'appliance_issue': 'medium',
+      'heating_issue': 'medium',
+      'cooling_issue': 'medium',
+      'pest_control': 'low',
       'general_inquiry': 'low'
     };
 
     const priority = priorityMapping[safeIssueType] || 'medium';
 
+    // // Create title from issue type and location - with null safety
+    // const title = `${safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${safeLocation}`;
+
+    // // Find or create resident based on phone number
     // Create title from issue type and location - with null safety
-    const title = `${safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${safeLocation}`;
+    const issueTypeFormatted = safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    const title = `${issueTypeFormatted} - ${safeLocation}`;
 
     // Find or create resident based on phone number
     let resident = null;
@@ -166,11 +207,19 @@ exports.handleOmniDIMWebhook = async (req, res) => {
         }
       },
       debug: {
-        receivedFields: {
-          issue_type: !!issue_type,
-          location: !!location,
-          description: !!description,
-          phone_number: !!phone_number
+  receivedFields: {
+          issue_type: issue_type || 'Not provided',
+          location: location || 'Not provided',
+          description: description || 'Not provided',
+          phone_number: phone_number || 'Not provided'
+        },
+        parsedData: {
+          safeIssueType,
+          safeLocation,
+          safeDescription,
+          safePhoneNumber,
+          category,
+          priority
         }
       }
     });
