@@ -16,6 +16,34 @@ router.get('/webhook', (req, res) => {
   });
 });
 
+// Add this new route for debugging
+router.post('/webhook-debug', (req, res) => {
+  console.log('=== OMNIDIM DEBUG WEBHOOK ===');
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('All keys:', Object.keys(req.body));
+  
+  // Check for different structures
+  if (req.body.call_report) {
+    console.log('✅ call_report found');
+    console.log('call_report keys:', Object.keys(req.body.call_report));
+    
+    if (req.body.call_report.extracted_variables) {
+      console.log('✅ extracted_variables found');
+      console.log('extracted_variables:', JSON.stringify(req.body.call_report.extracted_variables, null, 2));
+    }
+  }
+  
+  if (req.body.extracted_variables) {
+    console.log('✅ root extracted_variables found');
+    console.log('root extracted_variables:', JSON.stringify(req.body.extracted_variables, null, 2));
+  }
+  
+  console.log('================================');
+  
+  res.json({ message: 'Debug webhook received', data: req.body });
+});
+
 // Test endpoint to verify webhook is working
 router.post('/webhook-test', (req, res) => {
   console.log('Webhook test received:', JSON.stringify(req.body, null, 2));
