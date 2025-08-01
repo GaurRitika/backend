@@ -5,7 +5,7 @@ const User = require('../models/User');
 exports.createIssue = async (req, res) => {
   try {
     const { title, description, category, priority } = req.body;
-    const residentId = req.user.id; // From auth middleware
+    const residentId = req.user._id; // Use _id instead of id
 
     if (!title || !description || !category) {
       return res.status(400).json({ message: 'Title, description, and category are required' });
@@ -68,7 +68,7 @@ exports.getAllIssues = async (req, res) => {
 // Get my issues (Resident only)
 exports.getMyIssues = async (req, res) => {
   try {
-    const residentId = req.user.id;
+    const residentId = req.user._id;
     const { status, page = 1, limit = 10 } = req.query;
     
     let query = { resident: residentId };
@@ -76,6 +76,7 @@ exports.getMyIssues = async (req, res) => {
 
     const issues = await Issue.find(query)
       .populate('assignedTo', 'name email')
+      .populate('resident', 'name email phone isVoiceCallUser')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -99,7 +100,7 @@ exports.updateIssueStatus = async (req, res) => {
   try {
     const { issueId } = req.params;
     const { status, adminNotes, assignedTo } = req.body;
-    const adminId = req.user.id;
+    const adminId = req.user._id; // Use _id instead of id
 
     const issue = await Issue.findById(issueId);
     if (!issue) {
@@ -136,7 +137,7 @@ exports.updateIssueStatus = async (req, res) => {
 exports.getIssueById = async (req, res) => {
   try {
     const { issueId } = req.params;
-    const userId = req.user.id;
+    const userId = req.user._id; // Use _id instead of id
     const userRole = req.user.role;
 
     const issue = await Issue.findById(issueId)
@@ -148,7 +149,7 @@ exports.getIssueById = async (req, res) => {
     }
 
     // Check if user has access to this issue
-    if (userRole === 'resident' && issue.resident._id.toString() !== userId) {
+    if (userRole === 'resident' && issue.resident._id.toString() !== userId.toString()) {
       return res.status(403).json({ message: 'Access denied' });
     }
 
@@ -193,6 +194,76 @@ exports.getIssueStats = async (req, res) => {
     });
   } catch (err) {
     console.error('Get stats error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}; 
+
+// Utility function to link voice call issues to existing residents
+exports.linkVoiceCallIssues = async (req, res) => {
+  try {
+    // Find all voice call users
+    const voiceCallUsers = await User.find({ isVoiceCallUser: true });
+    
+    let linkedCount = 0;
+    let results = [];
+    
+    for (const voiceUser of voiceCallUsers) {
+      if (!voiceUser.phone || voiceUser.phone === 'unknown') continue;
+      
+      // Clean the phone number
+      const cleanPhone = voiceUser.phone.replace(/\D/g, '');
+      
+      // Find existing resident with matching phone number
+      const existingResident = await User.findOne({
+        $and: [
+          { isVoiceCallUser: { $ne: true } },
+          { role: 'resident' },
+          {
+            $or: [
+              { phone: voiceUser.phone },
+              { phone: cleanPhone },
+              { phone: `+${cleanPhone}` },
+              { phone: { $regex: cleanPhone } }
+            ]
+          }
+        ]
+      });
+      
+      if (existingResident) {
+        // Update all issues from this voice call user to point to the existing resident
+        const updateResult = await Issue.updateMany(
+          { resident: voiceUser._id },
+          { resident: existingResident._id }
+        );
+        
+        linkedCount += updateResult.modifiedCount;
+        
+        results.push({
+          voiceUser: {
+            id: voiceUser._id,
+            name: voiceUser.name,
+            phone: voiceUser.phone
+          },
+          linkedTo: {
+            id: existingResident._id,
+            name: existingResident.name,
+            phone: existingResident.phone
+          },
+          issuesLinked: updateResult.modifiedCount
+        });
+        
+        console.log(`Linked ${updateResult.modifiedCount} issues from voice user ${voiceUser.name} to resident ${existingResident.name}`);
+      }
+    }
+    
+    res.json({
+      message: `Successfully linked ${linkedCount} voice call issues to existing residents`,
+      linkedCount,
+      results
+    });
+    
+  } catch (err) {
+    console.error('Link voice call issues error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 }; 

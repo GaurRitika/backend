@@ -13,6 +13,22 @@ interface Issue {
   createdAt: string;
   updatedAt: string;
   adminNotes?: string;
+  source?: 'web' | 'voice_call';
+  voiceCallData?: {
+    callId?: string;
+    phoneNumber?: string;
+    callDuration?: number;
+    conversationSummary?: string;
+    issueType?: string;
+    location?: string;
+  };
+  resident?: {
+    _id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    isVoiceCallUser?: boolean;
+  };
   assignedTo?: {
     _id: string;
     name: string;
@@ -78,7 +94,6 @@ export default function ResidentDashboard() {
     
     try {
       const response = await issueAPI.createIssue(newIssue);
-      console.log('New issue created:', response);
       
       // Add the new issue to the beginning of the list
       if (response.issue) {
@@ -93,7 +108,6 @@ export default function ResidentDashboard() {
         fetchMyIssues();
       }, 1000);
     } catch (err: unknown) {
-      console.error('Error creating issue:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
@@ -269,6 +283,14 @@ export default function ResidentDashboard() {
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">
                           <h3 className="text-lg font-medium text-gray-900">{issue.title}</h3>
+                          {issue.source === 'voice_call' && (
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 flex items-center">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              Voice Call
+                            </span>
+                          )}
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(issue.priority)}`}>
                             {issue.priority}
                           </span>
@@ -280,7 +302,17 @@ export default function ResidentDashboard() {
                           {issue.assignedTo && (
                             <span>Assigned to: {issue.assignedTo.name}</span>
                           )}
+                          {issue.voiceCallData?.location && (
+                            <span>Location: {issue.voiceCallData.location}</span>
+                          )}
                         </div>
+                        {issue.voiceCallData?.conversationSummary && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                            <p className="text-sm text-gray-700">
+                              <strong>Call Summary:</strong> {issue.voiceCallData.conversationSummary}
+                            </p>
+                          </div>
+                        )}
                         {issue.adminNotes && (
                           <div className="mt-3 p-3 bg-blue-50 rounded-lg">
                             <p className="text-sm text-blue-800">
