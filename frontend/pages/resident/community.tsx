@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../../components/Navbar';
-import { apiUtils, eventAPI, announcementAPI } from '../../utils/api';
+import ChatModal from '../../components/ChatModal';
+import { apiUtils, eventAPI, announcementAPI, messageAPI } from '../../utils/api';
 
 interface Announcement {
   _id: string;
@@ -37,13 +38,11 @@ interface Event {
   createdAt: string;
 }
 
-interface CommunityMember {
-  id: string;
+interface Resident {
+  _id: string;
   name: string;
-  avatar: string;
-  role: string;
-  joinDate: string;
-  issueCount: number;
+  email: string;
+  createdAt: string;
 }
 
 export default function CommunityPage() {
@@ -51,9 +50,11 @@ export default function CommunityPage() {
   const [activeTab, setActiveTab] = useState<'announcements' | 'events' | 'members'>('announcements');
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [members, setMembers] = useState<CommunityMember[]>([]);
+  const [residents, setResidents] = useState<Resident[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showChatModal, setShowChatModal] = useState(false);
+  const [selectedResident, setSelectedResident] = useState<Resident | undefined>();
   const router = useRouter();
 
   useEffect(() => {
@@ -77,30 +78,30 @@ export default function CommunityPage() {
     try {
       setLoading(true);
       setError(null);
+      
       // Fetch real data from APIs
-      const [announcementsData, eventsData] = await Promise.all([
+      const [announcementsData, eventsData, residentsData] = await Promise.all([
         announcementAPI.getAnnouncements({ limit: 5, isActive: true }),
-        eventAPI.getEvents({ limit: 5, isActive: true, upcoming: true })
+        eventAPI.getEvents({ limit: 5, isActive: true, upcoming: true }),
+        messageAPI.getResidents()
       ]);
+      
       setAnnouncements(Array.isArray(announcementsData.announcements) ? announcementsData.announcements : []);
       setEvents(Array.isArray(eventsData.events) ? eventsData.events : []);
-      // Mock members as fallback
-      const mockMembers: CommunityMember[] = [
-        { id: '1', name: 'Sarah Johnson', avatar: 'SJ', role: 'Resident', joinDate: '2023-01-15', issueCount: 12 },
-        { id: '2', name: 'Mike Chen', avatar: 'MC', role: 'Resident', joinDate: '2023-03-20', issueCount: 9 },
-        { id: '3', name: 'Emily Davis', avatar: 'ED', role: 'Resident', joinDate: '2023-02-10', issueCount: 8 },
-        { id: '4', name: 'David Wilson', avatar: 'DW', role: 'Resident', joinDate: '2023-04-05', issueCount: 7 },
-        { id: '5', name: 'Lisa Brown', avatar: 'LB', role: 'Resident', joinDate: '2023-01-30', issueCount: 6 }
-      ];
-      setMembers(mockMembers);
+      setResidents(Array.isArray(residentsData) ? residentsData : []);
     } catch (error) {
       setError('Error fetching community data');
       setAnnouncements([]);
       setEvents([]);
-      setMembers([]);
+      setResidents([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMessageResident = (resident: Resident) => {
+    setSelectedResident(resident);
+    setShowChatModal(true);
   };
 
   const getPriorityColor = (priority: string) => {
@@ -119,6 +120,10 @@ export default function CommunityPage() {
       case 'low': return '🟢';
       default: return '⚪';
     }
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
   if (!user) return null;
@@ -282,26 +287,29 @@ export default function CommunityPage() {
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold text-gray-900">Community Members</h2>
                     <div className="text-sm text-gray-600">
-                      {members.length} active members
+                      {residents.length} active members
                     </div>
                   </div>
                   
                   <div className="grid gap-4">
-                    {members.map((member) => (
-                      <div key={member.id} className="bg-white rounded-lg shadow p-4">
+                    {residents.map((resident) => (
+                      <div key={resident._id} className="bg-white rounded-lg shadow p-4">
                         <div className="flex items-center space-x-4">
                           <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
-                            <span className="text-indigo-600 font-semibold text-lg">{member.avatar}</span>
+                            <span className="text-indigo-600 font-semibold text-lg">{getInitials(resident.name)}</span>
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-lg font-medium text-gray-900">{member.name}</h3>
-                            <p className="text-sm text-gray-600">{member.role} • Joined {new Date(member.joinDate).toLocaleDateString()}</p>
+                            <h3 className="text-lg font-medium text-gray-900">{resident.name}</h3>
+                            <p className="text-sm text-gray-600">Resident • Joined {new Date(resident.createdAt).toLocaleDateString()}</p>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm text-gray-600">
-                              {member.issueCount} issues reported
+                            <div className="text-sm text-gray-600 mb-2">
+                              {resident.email}
                             </div>
-                            <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
+                            <button 
+                              onClick={() => handleMessageResident(resident)}
+                              className="text-indigo-600 hover:text-indigo-700 text-sm font-medium"
+                            >
                               Message
                             </button>
                           </div>
@@ -324,7 +332,10 @@ export default function CommunityPage() {
                 </svg>
                 <span className="text-sm font-medium text-gray-700">Report Issue</span>
               </button>
-              <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-indigo-300 hover:bg-indigo-50 transition-colors">
+              <button 
+                onClick={() => setShowChatModal(true)}
+                className="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
+              >
                 <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
@@ -340,6 +351,16 @@ export default function CommunityPage() {
           </div>
         </div>
       </div>
+
+      {/* Chat Modal */}
+      <ChatModal
+        isOpen={showChatModal}
+        onClose={() => {
+          setShowChatModal(false);
+          setSelectedResident(undefined);
+        }}
+        selectedResident={selectedResident}
+      />
     </>
   );
 } 
