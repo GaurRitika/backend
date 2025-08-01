@@ -5,7 +5,8 @@ const {
   getMyIssues, 
   updateIssueStatus, 
   getIssueById,
-  getIssueStats 
+  getIssueStats,
+  linkVoiceCallIssues
 } = require('../controllers/issueController');
 const { authenticateToken, requireAdmin, requireResident } = require('../middleware/auth');
 
@@ -22,6 +23,7 @@ router.get('/my-issues', requireResident, getMyIssues); // Get resident's own is
 router.get('/', requireAdmin, getAllIssues); // Get all issues
 router.get('/stats', requireAdmin, getIssueStats); // Get issue statistics
 router.put('/:issueId', requireAdmin, updateIssueStatus); // Update issue status
+router.post('/link-voice-calls', requireAdmin, linkVoiceCallIssues); // Link voice call issues to residents
 
 // Common routes
 router.get('/:issueId', getIssueById); // Get specific issue (with access control)

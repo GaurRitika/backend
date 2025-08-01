@@ -71,11 +71,58 @@ exports.getMyIssues = async (req, res) => {
     const residentId = req.user._id; // Use _id instead of id
     const { status, page = 1, limit = 10 } = req.query;
     
+    // Base query for issues directly assigned to this resident
     let query = { resident: residentId };
     if (status) query.status = status;
 
+    // Also include voice call issues from users with the same phone number
+    // This helps link voice call issues to the actual resident
+    if (req.user.phone) {
+      // Clean the phone number (remove non-digits)
+      const cleanUserPhone = req.user.phone.replace(/\D/g, '');
+      
+      // Find voice call users with the same phone number (considering different formats)
+      const voiceCallUsers = await User.find({
+        $and: [
+          { isVoiceCallUser: true },
+          {
+            $or: [
+              { phone: req.user.phone },
+              { phone: cleanUserPhone },
+              { phone: `+${cleanUserPhone}` },
+              { phone: { $regex: cleanUserPhone } }
+            ]
+          }
+        ]
+      }).select('_id');
+
+      if (voiceCallUsers.length > 0) {
+        const voiceCallUserIds = voiceCallUsers.map(user => user._id);
+        
+        // Create a combined query using $or to include both direct issues and voice call issues
+        const combinedQuery = {
+          $or: [
+            { resident: residentId },
+            {
+              resident: { $in: voiceCallUserIds },
+              source: 'voice_call'
+            }
+          ]
+        };
+        
+        // Apply status filter to both parts of the query
+        if (status) {
+          combinedQuery.$or[0].status = status;
+          combinedQuery.$or[1].status = status;
+        }
+        
+        query = combinedQuery;
+      }
+    }
+
     const issues = await Issue.find(query)
       .populate('assignedTo', 'name email')
+      .populate('resident', 'name email phone isVoiceCallUser')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -193,6 +240,76 @@ exports.getIssueStats = async (req, res) => {
     });
   } catch (err) {
     console.error('Get stats error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}; 
+
+// Utility function to link voice call issues to existing residents
+exports.linkVoiceCallIssues = async (req, res) => {
+  try {
+    // Find all voice call users
+    const voiceCallUsers = await User.find({ isVoiceCallUser: true });
+    
+    let linkedCount = 0;
+    let results = [];
+    
+    for (const voiceUser of voiceCallUsers) {
+      if (!voiceUser.phone || voiceUser.phone === 'unknown') continue;
+      
+      // Clean the phone number
+      const cleanPhone = voiceUser.phone.replace(/\D/g, '');
+      
+      // Find existing resident with matching phone number
+      const existingResident = await User.findOne({
+        $and: [
+          { isVoiceCallUser: { $ne: true } },
+          { role: 'resident' },
+          {
+            $or: [
+              { phone: voiceUser.phone },
+              { phone: cleanPhone },
+              { phone: `+${cleanPhone}` },
+              { phone: { $regex: cleanPhone } }
+            ]
+          }
+        ]
+      });
+      
+      if (existingResident) {
+        // Update all issues from this voice call user to point to the existing resident
+        const updateResult = await Issue.updateMany(
+          { resident: voiceUser._id },
+          { resident: existingResident._id }
+        );
+        
+        linkedCount += updateResult.modifiedCount;
+        
+        results.push({
+          voiceUser: {
+            id: voiceUser._id,
+            name: voiceUser.name,
+            phone: voiceUser.phone
+          },
+          linkedTo: {
+            id: existingResident._id,
+            name: existingResident.name,
+            phone: existingResident.phone
+          },
+          issuesLinked: updateResult.modifiedCount
+        });
+        
+        console.log(`Linked ${updateResult.modifiedCount} issues from voice user ${voiceUser.name} to resident ${existingResident.name}`);
+      }
+    }
+    
+    res.json({
+      message: `Successfully linked ${linkedCount} voice call issues to existing residents`,
+      linkedCount,
+      results
+    });
+    
+  } catch (err) {
+    console.error('Link voice call issues error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 }; 
