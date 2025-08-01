@@ -25,12 +25,12 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       call_id
     });
 
-    // Validate required fields
-    if (!issue_type || !location || !description) {
-      return res.status(400).json({ 
-        message: 'Missing required fields: issue_type, location, description' 
-      });
-    }
+    // // Validate required fields
+    // if (!issue_type || !location || !description) {
+    //   return res.status(400).json({ 
+    //     message: 'Missing required fields: issue_type, location, description' 
+    //   });
+    // }
 
     // Map OmniDIM issue_type to our category system
     const categoryMapping = {
