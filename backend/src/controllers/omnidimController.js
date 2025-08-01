@@ -16,8 +16,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
         message: 'Invalid request body. Expected JSON object with issue data.'
       });
     }
-
-    const { 
+   const { 
     const callReport = req.body.call_report || {};
     const extractedVars = callReport.extracted_variables || {};
     
