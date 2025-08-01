@@ -71,25 +71,7 @@ exports.getMyIssues = async (req, res) => {
     const residentId = req.user._id;
     const { status, page = 1, limit = 10 } = req.query;
     
-    let query;
-    
-    // Get issues for current resident
-    let residentIds = [residentId];
-    
-    // If user has phone number, also include voice call users with same phone number
-    if (req.user.phone) {
-      const voiceCallUsers = await User.find({
-        phone: req.user.phone,
-        isVoiceCallUser: true,
-        role: 'resident'
-      }).select('_id');
-      
-      const voiceCallUserIds = voiceCallUsers.map(user => user._id);
-      residentIds = [...residentIds, ...voiceCallUserIds];
-    }
-    
-    // Fetch issues for all matching residents
-    query = { resident: { $in: residentIds } };
+    let query = { resident: residentId };
     if (status) query.status = status;
 
     const issues = await Issue.find(query)
