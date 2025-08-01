@@ -78,7 +78,6 @@ export default function ResidentDashboard() {
     
     try {
       const response = await issueAPI.createIssue(newIssue);
-     const response = await issueAPI.createIssue(newIssue);
       console.log('New issue created:', response);
       
       // Add the new issue to the beginning of the list
@@ -100,11 +99,7 @@ export default function ResidentDashboard() {
       setLoading(false);
       setNewIssue({ title: '', description: '', category: 'general', priority: 'medium' });
       setShowNewIssueForm(false);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
 
   const getStatusColor = (status: string) => {
@@ -239,18 +234,6 @@ export default function ResidentDashboard() {
             </button>
           </div>
 
-
-            {/* Voice Support Button */}
-            <button
-              onClick={() => window.open("https://widget.omnidim.io/8339", "_blank")}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition duration-200 flex items-center"
-            >
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-              </svg>
-              Voice Support
-            </button>
-          </div>
           
 
           {/* Error Display */}
@@ -402,4 +385,5 @@ export default function ResidentDashboard() {
     </>
   );
 } 
+
 
