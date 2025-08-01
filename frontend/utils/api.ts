@@ -1203,3 +1203,54 @@ export const omnidimAPI = {
     }>;
   },
 };
+
+// Message API functions
+export const messageAPI = {
+  // Get all conversations for the current user
+  getConversations: async () => {
+    return apiRequest('/api/messages/conversations');
+  },
+
+  // Get messages for a specific conversation
+  getConversationMessages: async (conversationId: string, params?: {
+    page?: number;
+    limit?: number;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append('page', params.page.toString());
+    if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+    const queryString = queryParams.toString();
+    return apiRequest(`/api/messages/conversations/${conversationId}/messages${queryString ? `?${queryString}` : ''}`);
+  },
+
+  // Send a message
+  sendMessage: async (messageData: {
+    receiverId: string;
+    content: string;
+    messageType?: 'text' | 'image' | 'file';
+    attachments?: Array<{
+      filename: string;
+      url: string;
+      size: number;
+      type: string;
+    }>;
+  }) => {
+    return apiRequest('/api/messages/send', {
+      method: 'POST',
+      body: JSON.stringify(messageData),
+    });
+  },
+
+  // Get all residents for community members list
+  getResidents: async () => {
+    return apiRequest('/api/messages/residents');
+  },
+
+  // Mark messages as read
+  markMessagesAsRead: async (senderId: string) => {
+    return apiRequest(`/api/messages/mark-read/${senderId}`, {
+      method: 'PUT',
+    });
+  },
+};
