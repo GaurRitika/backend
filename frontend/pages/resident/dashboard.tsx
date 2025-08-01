@@ -381,9 +381,10 @@ export default function ResidentDashboard() {
             </div>
           </div>
         )}
-    
+    </div>  
     </>
   );
 } 
+
 
 
