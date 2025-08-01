@@ -78,7 +78,26 @@ export default function ResidentDashboard() {
     
     try {
       const response = await issueAPI.createIssue(newIssue);
-      setIssues([response.issue, ...issues]);
+     const response = await issueAPI.createIssue(newIssue);
+      console.log('New issue created:', response);
+      
+      // Add the new issue to the beginning of the list
+      if (response.issue) {
+        setIssues(prevIssues => [response.issue, ...prevIssues]);
+      }
+      
+      setNewIssue({ title: '', description: '', category: 'general', priority: 'medium' });
+      setShowNewIssueForm(false);
+      
+      // Refresh the issues list to ensure everything is up to date
+      setTimeout(() => {
+        fetchMyIssues();
+      }, 1000);
+    } catch (err: unknown) {
+      console.error('Error creating issue:', err);
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
       setNewIssue({ title: '', description: '', category: 'general', priority: 'medium' });
       setShowNewIssueForm(false);
     } catch (err: unknown) {
