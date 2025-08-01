@@ -5,6 +5,18 @@ const omnidimService = require('../services/omnidimService');
 // Handle webhook from OmniDIM after voice call
 exports.handleOmniDIMWebhook = async (req, res) => {
   try {
+    // Log the complete request for debugging
+    console.log('OmniDIM Webhook received - Full request body:', JSON.stringify(req.body, null, 2));
+    console.log('Request headers:', req.headers);
+    
+    // Handle case where req.body might be empty or malformed
+    if (!req.body || typeof req.body !== 'object') {
+      console.log('Invalid or empty request body received');
+      return res.status(400).json({
+        message: 'Invalid request body. Expected JSON object with issue data.'
+      });
+    }
+
     const { 
       issue_type, 
       location, 
@@ -17,7 +29,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       extracted_variables 
     } = req.body;
 
-    console.log('OmniDIM Webhook received:', {
+    console.log('OmniDIM Webhook parsed fields:', {
       issue_type,
       location,
       description,
@@ -25,12 +37,11 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       call_id
     });
 
-    // // Validate required fields
-    // if (!issue_type || !location || !description) {
-    //   return res.status(400).json({ 
-    //     message: 'Missing required fields: issue_type, location, description' 
-    //   });
-    // }
+    // Provide default values for missing fields
+    const safeIssueType = issue_type || 'general_inquiry';
+    const safeLocation = location || 'Not specified';
+    const safeDescription = description || 'Voice call issue - details to be updated';
+    const safePhoneNumber = phone_number || 'unknown';
 
     // Map OmniDIM issue_type to our category system
     const categoryMapping = {
@@ -43,7 +54,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       'general_inquiry': 'general'
     };
 
-    const category = categoryMapping[issue_type] || 'general';
+    const category = categoryMapping[safeIssueType] || 'general';
 
     // Determine priority based on issue type
     const priorityMapping = {
@@ -56,53 +67,89 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       'general_inquiry': 'low'
     };
 
-    const priority = priorityMapping[issue_type] || 'medium';
+    const priority = priorityMapping[safeIssueType] || 'medium';
 
-    // Create title from issue type and location
-    const title = `${issue_type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${location}`;
+    // Create title from issue type and location - with null safety
+    const title = `${safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${safeLocation}`;
 
     // Find or create resident based on phone number
-    let resident = await User.findOne({ phone: phone_number, role: 'resident' });
+    let resident = null;
     
-    if (!resident) {
-      // Create a temporary resident if not found
-      resident = new User({
-        name: `Voice Call Resident (${phone_number})`,
-        email: `voice_${phone_number.replace(/\D/g, '')}@community.com`,
-        phone: phone_number,
-        role: 'resident',
-        isVoiceCallUser: true,
-        password: "tempPassword123" // Add default password for voice users
-      });
-      await resident.save();
+    try {
+      // Only try to find/create resident if we have a valid phone number
+      if (safePhoneNumber && safePhoneNumber !== 'unknown') {
+        resident = await User.findOne({ phone: safePhoneNumber, role: 'resident' });
+        
+        if (!resident) {
+          // Create a temporary resident if not found
+          const cleanPhoneNumber = safePhoneNumber.replace(/\D/g, '');
+          resident = new User({
+            name: `Voice Call Resident (${safePhoneNumber})`,
+            email: `voice_${cleanPhoneNumber || Date.now()}@community.com`,
+            phone: safePhoneNumber,
+            role: 'resident',
+            isVoiceCallUser: true,
+            password: "tempPassword123" // Add default password for voice users
+          });
+          await resident.save();
+          console.log('Created new voice call resident:', resident._id);
+        }
+      } else {
+        // Create a generic resident for unknown phone numbers
+        resident = new User({
+          name: `Voice Call Resident (Unknown)`,
+          email: `voice_unknown_${Date.now()}@community.com`,
+          phone: 'unknown',
+          role: 'resident',
+          isVoiceCallUser: true,
+          password: "tempPassword123"
+        });
+        await resident.save();
+        console.log('Created generic voice call resident:', resident._id);
+      }
+    } catch (userError) {
+      console.error('Error creating/finding resident:', userError);
+      // If user creation fails, create a minimal fallback
+      resident = {
+        _id: 'temp_' + Date.now(),
+        name: 'Voice Call User',
+        email: 'temp@community.com',
+        phone: safePhoneNumber
+      };
     }
 
     // Create the issue
     const issue = new Issue({
       title,
-      description,
+      description: safeDescription,
       category,
       priority,
       resident: resident._id,
       source: 'voice_call',
       voiceCallData: {
-        callId: call_id,
-        agentId: agent_id,
-        phoneNumber: phone_number,
-        callDuration: call_duration,
-        conversationSummary: conversation_summary,
-        extractedVariables: extracted_variables,
-        issueType: issue_type,
-        location: location
+        callId: call_id || 'unknown',
+        agentId: agent_id || 'unknown',
+        phoneNumber: safePhoneNumber,
+        callDuration: call_duration || 0,
+        conversationSummary: conversation_summary || 'No summary available',
+        extractedVariables: extracted_variables || {},
+        issueType: safeIssueType,
+        location: safeLocation
       }
     });
 
     await issue.save();
-    
-    // Populate resident info for response
-    await issue.populate('resident', 'name email phone');
-
     console.log('Issue created from voice call:', issue._id);
+    
+    // Try to populate resident info for response, but don't fail if it doesn't work
+    let populatedIssue = issue;
+    try {
+      if (resident._id && !resident._id.toString().startsWith('temp_')) {
+        populatedIssue = await issue.populate('resident', 'name email phone');
+      }
+    } catch (populateError) {
+      console.log('Could not populate resident info:', populateError.message);
+    }
 
     res.status(200).json({
       message: 'Voice call issue created successfully',
@@ -112,7 +159,19 @@ exports.handleOmniDIMWebhook = async (req, res) => {
         category: issue.category,
         priority: issue.priority,
         status: issue.status,
-        resident: issue.resident
+        resident: populatedIssue.resident || {
+          name: resident.name,
+          email: resident.email,
+          phone: resident.phone
+        }
+      },
+      debug: {
+        receivedFields: {
+          issue_type: !!issue_type,
+          location: !!location,
+          description: !!description,
+          phone_number: !!phone_number
+        }
       }
     });
 
