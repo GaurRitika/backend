@@ -16,7 +16,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
         message: 'Invalid request body. Expected JSON object with issue data.'
       });
     }
-   const { 
+    
     const callReport = req.body.call_report || {};
     const extractedVars = callReport.extracted_variables || {};
     
@@ -48,7 +48,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
 
     // Map OmniDIM issue_type to our category system
     const categoryMapping = {
-    'water_leakage': 'water',
+      'water_leakage': 'water',
       'water_issue': 'water',
       'power cut': 'electricity',
       'power_cut': 'electricity',
@@ -59,7 +59,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
       'security_issue': 'security',
       'cleaning_request': 'cleaning',
       'parking_issue': 'parking',
-        'maintenance_request': 'maintenance',
+      'maintenance_request': 'maintenance',
       'appliance_issue': 'appliance',
       'heating_issue': 'heating',
       'cooling_issue': 'cooling',
@@ -71,7 +71,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
 
     // Determine priority based on issue type
     const priorityMapping = {
- 'water_leakage': 'high',
+      'water_leakage': 'high',
       'water_issue': 'high',
       'power cut': 'high',
       'power_cut': 'high',
@@ -92,10 +92,6 @@ exports.handleOmniDIMWebhook = async (req, res) => {
 
     const priority = priorityMapping[safeIssueType] || 'medium';
 
-    // // Create title from issue type and location - with null safety
-    // const title = `${safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${safeLocation}`;
-
-    // // Find or create resident based on phone number
     // Create title from issue type and location - with null safety
     const issueTypeFormatted = safeIssueType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     const title = `${issueTypeFormatted} - ${safeLocation}`;
@@ -194,7 +190,7 @@ exports.handleOmniDIMWebhook = async (req, res) => {
         }
       },
       debug: {
-  receivedFields: {
+        receivedFields: {
           issue_type: issue_type || 'Not provided',
           location: location || 'Not provided',
           description: description || 'Not provided',
@@ -290,4 +286,3 @@ exports.getVoiceCallStats = async (req, res) => {
     res.status(500).json({ message: 'Error fetching voice call statistics' });
   }
 };
-
