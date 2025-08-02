@@ -202,7 +202,6 @@ export default function Navbar() {
                   <button
                     onClick={() => {
                       setShowProfileDropdown(!showProfileDropdown);
-                      setShowNotifications(false);
                     }}
                     className="flex items-center p-2 text-gray-600 hover:text-primary-600 rounded-xl hover:bg-white/20 transition-all duration-300 hover-lift group"
                   >
