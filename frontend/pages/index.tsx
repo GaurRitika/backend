@@ -287,7 +287,7 @@ export default function Home() {
                 </div>
                 
                 <h2 className="text-5xl font-display font-bold text-gray-900 mb-6">Choose Your Role</h2>
-                <p className="text-gray-600 mb-12 text-xl">Select how you'd like to access the platform</p>
+                <p className="text-gray-600 mb-12 text-xl">Select how you&apos;d like to access the platform</p>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-12">
                   <button 

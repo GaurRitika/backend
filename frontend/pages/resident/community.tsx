@@ -89,7 +89,7 @@ export default function CommunityPage() {
       setAnnouncements(Array.isArray(announcementsData.announcements) ? announcementsData.announcements : []);
       setEvents(Array.isArray(eventsData.events) ? eventsData.events : []);
       setResidents(Array.isArray(residentsData) ? residentsData : []);
-    } catch (error) {
+    } catch {
       setError('Error fetching community data');
       setAnnouncements([]);
       setEvents([]);

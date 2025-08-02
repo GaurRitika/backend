@@ -17,8 +17,8 @@ export default function ResidentLogin() {
     setLoading(true);
     try {
       const data = await authAPI.login(email, password);
-      if (data.user.role !== 'resident') throw new Error('Not a resident account');
-      localStorage.setItem('token', data.token);
+      if (((data as Record<string, unknown>).user as Record<string, unknown>)?.role !== 'resident') throw new Error('Not a resident account');
+      localStorage.setItem('token', (data as Record<string, unknown>).token as string);
       router.push('/resident/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');

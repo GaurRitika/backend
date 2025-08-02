@@ -83,7 +83,7 @@ export default function ResidentDashboard() {
     try {
       setFetching(true);
       const response = await issueAPI.getMyIssues();
-      setIssues(response.issues || []);
+      setIssues((response as Record<string, unknown>).issues as Issue[] || []);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
       setError(errorMessage);
@@ -105,8 +105,8 @@ export default function ResidentDashboard() {
       console.log('New issue created:', response);
       
       // Add the new issue to the beginning of the list
-      if (response.issue) {
-        setIssues(prevIssues => [response.issue, ...prevIssues]);
+      if ((response as Record<string, unknown>).issue) {
+        setIssues(prevIssues => [(response as Record<string, unknown>).issue as Issue, ...prevIssues]);
       }
       
       setNewIssue({ title: '', description: '', category: 'general', priority: 'medium' });

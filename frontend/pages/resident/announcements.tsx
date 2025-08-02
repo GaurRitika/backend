@@ -78,7 +78,7 @@ const ResidentAnnouncements: React.FC = () => {
       setAnnouncements(Array.isArray(data.announcements) ? data.announcements : []);
       setPagination(data.pagination || { currentPage: 1, totalPages: 1, totalItems: 0, hasNextPage: false, hasPrevPage: false });
       setError(null);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch announcements');
       setAnnouncements([]);
       setPagination({ currentPage: 1, totalPages: 1, totalItems: 0, hasNextPage: false, hasPrevPage: false });

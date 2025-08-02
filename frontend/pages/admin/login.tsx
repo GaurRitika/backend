@@ -17,8 +17,8 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       const data = await authAPI.login(email, password);
-      if (data.user.role !== 'admin') throw new Error('Not an admin account');
-      localStorage.setItem('token', data.token);
+      if (((data as Record<string, unknown>).user as Record<string, unknown>)?.role !== 'admin') throw new Error('Not an admin account');
+      localStorage.setItem('token', (data as Record<string, unknown>).token as string);
       router.push('/admin/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');

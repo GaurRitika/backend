@@ -60,7 +60,7 @@ export default function ResidentsPage() {
         search: searchTerm || undefined
       });
       
-      setResidents(response.residents);
+      setResidents((response as Record<string, unknown>).residents as Resident[] || []);
     } catch (error) {
       console.error('Error fetching residents:', error);
       setError('Failed to fetch residents');

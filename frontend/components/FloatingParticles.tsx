@@ -73,7 +73,7 @@ export default function FloatingParticles() {
           const newRotation = particle.rotation + particle.rotationSpeed;
 
           // Update scale with breathing effect
-          let newScale = particle.scale + (particle.scaleDirection * 0.01);
+          const newScale = particle.scale + (particle.scaleDirection * 0.01);
           let newScaleDirection = particle.scaleDirection;
           if (newScale > 1.2 || newScale < 0.3) {
             newScaleDirection *= -1;

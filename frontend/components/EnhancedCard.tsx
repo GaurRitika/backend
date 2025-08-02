@@ -307,7 +307,7 @@ export function TestimonialCard({
       )}
       
       <blockquote className="text-xl font-medium text-gray-700 mb-8 leading-relaxed italic group-hover:text-gray-800 transition-colors duration-500">
-        "{quote}"
+        &ldquo;{quote}&rdquo;
       </blockquote>
       
       <div className="flex items-center">

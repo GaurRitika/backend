@@ -26,7 +26,12 @@ interface VoiceCall {
 export default function VoiceCallsPage() {
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [voiceCalls, setVoiceCalls] = useState<VoiceCall[]>([]);
-  const [stats, setStats] = useState<any>({
+  const [stats, setStats] = useState<{
+    totalVoiceCalls: number;
+    callsByCategory: Record<string, number>;
+    callsByStatus: Record<string, number>;
+    averageCallDuration: number;
+  }>({
     totalVoiceCalls: 0,
     callsByCategory: {},
     callsByStatus: {},
@@ -126,7 +131,7 @@ export default function VoiceCallsPage() {
               </div>
             </div>
             
-            {Object.entries(stats.callsByCategory || {}).slice(0, 3).map(([category, count], index) => (
+            {Object.entries(stats.callsByCategory || {}).slice(0, 3).map(([category, count]) => (
               <div key={category} className="bg-white rounded-lg shadow p-6">
                 <div className="flex items-center">
                   <div className="p-2 bg-orange-100 rounded-lg">

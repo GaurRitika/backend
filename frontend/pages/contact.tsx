@@ -61,7 +61,7 @@ export default function ContactPage() {
               </h1>
               
               <p className="text-xl md:text-2xl text-primary-100 max-w-4xl mx-auto leading-relaxed animate-slide-up" style={{ animationDelay: '0.2s' }}>
-                Get in touch with our team. We're here to help you transform your community.
+                Get in touch with our team. We&apos;re here to help you transform your community.
               </p>
             </div>
           </div>
@@ -88,7 +88,7 @@ export default function ContactPage() {
                       <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Thank you for your message! We'll get back to you within 24 hours.
+                      Thank you for your message! We&apos;ll get back to you within 24 hours.
                     </div>
                   </div>
                 )}
@@ -213,7 +213,7 @@ export default function ContactPage() {
                       <div>
                         <h4 className="text-lg font-semibold text-gray-900 mb-1">Email Us</h4>
                         <p className="text-primary-600 font-medium">hello@shebuilds.com</p>
-                        <p className="text-sm text-gray-500">We'll respond within 24 hours</p>
+                        <p className="text-sm text-gray-500">We&apos;ll respond within 24 hours</p>
                       </div>
                     </div>
                   </div>
@@ -281,7 +281,7 @@ export default function ContactPage() {
               </div>
               <h2 className="text-4xl font-display font-bold text-gray-900 mb-6">Why Contact Us?</h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                We're committed to helping you succeed with SheBuilds and building stronger communities together.
+                We&apos;re committed to helping you succeed with SheBuilds and building stronger communities together.
               </p>
             </div>
 
@@ -310,7 +310,7 @@ export default function ContactPage() {
                   </div>
                   <h3 className="text-xl font-display font-bold text-gray-900 mb-4">Custom Solutions</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Discuss custom features and integrations tailored to your community's unique needs.
+                    Discuss custom features and integrations tailored to your community&apos;s unique needs.
                   </p>
                 </div>
               </div>

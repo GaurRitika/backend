@@ -90,10 +90,10 @@ const AdminAnnouncements: React.FC = () => {
       setLoading(true);
       setError(null);
       // For admin, always fetch authored announcements
-      const data = await announcementAPI.getAuthoredAnnouncements({ page, limit: 12 });
-      setAnnouncements(Array.isArray(data.announcements) ? data.announcements : []);
-      setPagination(data.pagination || { currentPage: 1, totalPages: 1, totalItems: 0, hasNextPage: false, hasPrevPage: false });
-    } catch (err) {
+      const data = await announcementAPI.getAuthoredAnnouncements();
+      setAnnouncements(Array.isArray(data) ? data : []);
+      setPagination({ currentPage: 1, totalPages: 1, totalItems: Array.isArray(data) ? data.length : 0, hasNextPage: false, hasPrevPage: false });
+    } catch {
       setError('Failed to fetch announcements');
       setAnnouncements([]);
       setPagination({ currentPage: 1, totalPages: 1, totalItems: 0, hasNextPage: false, hasPrevPage: false });
