@@ -38,6 +38,7 @@ const AdminAnnouncements: React.FC = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ _id: string; name: string; email: string } | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [pagination, setPagination] = useState({
@@ -79,6 +80,7 @@ const AdminAnnouncements: React.FC = () => {
         return;
       }
 
+      setCurrentUser(userInfo);
       fetchAnnouncements();
     };
 
@@ -89,10 +91,10 @@ const AdminAnnouncements: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      // For admin, always fetch authored announcements
-      const data = await announcementAPI.getAuthoredAnnouncements();
-      setAnnouncements(Array.isArray(data) ? data : []);
-      setPagination({ currentPage: 1, totalPages: 1, totalItems: Array.isArray(data) ? data.length : 0, hasNextPage: false, hasPrevPage: false });
+      // For admin, fetch all announcements (including authored ones)
+      const data = await announcementAPI.getAnnouncements({ page, limit: 12 });
+      setAnnouncements(Array.isArray(data.announcements) ? data.announcements : []);
+      setPagination(data.pagination || { currentPage: 1, totalPages: 1, totalItems: 0, hasNextPage: false, hasPrevPage: false });
     } catch {
       setError('Failed to fetch announcements');
       setAnnouncements([]);
@@ -314,10 +316,14 @@ const AdminAnnouncements: React.FC = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto"></div>
               <p className="mt-4 text-gray-600">Loading announcements...</p>
             </div>
-          ) : announcements && announcements.length > 0 ? announcements.map((announcement) => (
+          ) : announcements && announcements.length > 0 ? announcements.map((announcement) => {
+            const isMyAnnouncement = currentUser && announcement.author._id === currentUser._id;
+            return (
             <div 
               key={announcement._id} 
-              className="bg-white rounded-lg shadow-md p-6 border-l-4 transition-all hover:shadow-lg border-orange-500"
+              className={`bg-white rounded-lg shadow-md p-6 border-l-4 transition-all hover:shadow-lg ${
+                isMyAnnouncement ? 'border-blue-500 bg-blue-50' : 'border-orange-500'
+              }`}
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -333,6 +339,17 @@ const AdminAnnouncements: React.FC = () => {
                   </div>
                   
                   <div className="flex items-center space-x-4 text-sm text-gray-500 mb-3">
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      By: {announcement.author.name}
+                      {isMyAnnouncement && (
+                        <span className="ml-2 px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                          Your announcement
+                        </span>
+                      )}
+                    </div>
                     <div className="flex items-center">
                       <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -413,7 +430,8 @@ const AdminAnnouncements: React.FC = () => {
                 </div>
               )}
             </div>
-          )) : (
+            );
+          }) : (
             <div className="text-center py-12">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
