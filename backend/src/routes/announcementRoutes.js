@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const Announcement = require('../models/Announcement');
 const User = require('../models/User');
+const NotificationService = require('../services/notificationService');
 
 // Get all announcements (public, for residents)
 router.get('/', async (req, res) => {
@@ -90,6 +91,16 @@ router.post('/', authenticateToken, async (req, res) => {
     });
 
     await announcement.save();
+
+    // Create notifications for residents if announcement is active
+    if (announcement.isActive) {
+      try {
+        await NotificationService.createAnnouncementNotification(announcement);
+      } catch (notificationError) {
+        console.error('Failed to create announcement notifications:', notificationError);
+        // Don't fail the main request if notification fails
+      }
+    }
 
     res.status(201).json(announcement);
   } catch (error) {
