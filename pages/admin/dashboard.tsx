@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Head from 'next/head';
 import Navbar from '../../components/Navbar';
 import { issueAPI, apiUtils } from '../../utils/api';
 
@@ -178,6 +179,45 @@ export default function AdminDashboard() {
     }
   };
 
+  const handlePayment = () => {
+    const options = {
+      key: 'rzp_test_Dtc01mGySeWKaM', // Razorpay Key ID
+      amount: 50000, // Amount in paise (500 INR)
+      currency: 'INR',
+      name: 'SheBuilds Community',
+      description: 'Test Payment',
+      image: '/logo.png', // Optional: Add your logo
+      handler: function (response: any) {
+        alert(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+        console.log('Payment Response:', response);
+      },
+      prefill: {
+        name: user?.name || 'Admin User',
+        email: 'admin@shebuilds.com',
+        contact: '9999999999'
+      },
+      notes: {
+        address: 'SheBuilds Community Platform'
+      },
+      theme: {
+        color: '#059669' // Green color to match the button
+      }
+    };
+
+    if (typeof window !== 'undefined' && (window as any).Razorpay) {
+      const rzp = new (window as any).Razorpay(options);
+      
+      rzp.on('payment.failed', function (response: any) {
+        alert(`Payment failed! Error: ${response.error.description}`);
+        console.log('Payment Failed:', response.error);
+      });
+      
+      rzp.open();
+    } else {
+      alert('Razorpay SDK not loaded. Please refresh the page and try again.');
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pending': return 'bg-yellow-900/20 text-yellow-300 border-yellow-500/30';
@@ -214,6 +254,9 @@ export default function AdminDashboard() {
 
   return (
     <>
+      <Head>
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+      </Head>
       <Navbar />
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 pt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -320,6 +363,29 @@ export default function AdminDashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 View Call History
+              </button>
+            </div>
+          </div>
+
+          {/* Payment Gateway */}
+          <div className="bg-gray-800/50 backdrop-blur-sm border border-gray-700 rounded-xl p-6 mb-8 hover:bg-gray-800/70 transition-all duration-300">
+            <div className="flex items-center mb-6">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-lg flex items-center justify-center mr-3">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-white">Payment Gateway</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
+              <button
+                onClick={handlePayment}
+                className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Make Payment
               </button>
             </div>
           </div>
