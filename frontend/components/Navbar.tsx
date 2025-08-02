@@ -1,24 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { apiUtils, notificationAPI } from '../utils/api';
+import { apiUtils } from '../utils/api';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const [user, setUser] = useState<{ name: string; role: string } | null>(null);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
-  const [notifications, setNotifications] = useState<Array<{ message: string; time: string }>>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const userInfo = apiUtils.getUserFromToken();
     setUser(userInfo);
-    
-    // Fetch notifications if user is authenticated
-    if (userInfo) {
-      fetchNotifications();
-    }
   }, []);
 
   // Close dropdowns when clicking outside
@@ -26,7 +19,6 @@ export default function Navbar() {
     const handleClickOutside = (e: MouseEvent) => {
       if (!(e.target as Element).closest('.dropdown-container')) {
         setShowProfileDropdown(false);
-        setShowNotifications(false);
       }
     };
     
@@ -34,18 +26,7 @@ export default function Navbar() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
-  const fetchNotifications = async () => {
-    try {
-      const data = await notificationAPI.getNotifications({ limit: 5, unreadOnly: true });
-      setUnreadCount(data.unreadCount);
-      setNotifications(data.notifications.slice(0, 3).map(n => ({
-        message: n.title,
-        time: new Date(n.createdAt).toLocaleDateString()
-      })));
-    } catch (err) {
-      console.error('Error fetching notifications:', err);
-    }
-  };
+
 
   const handleLogout = () => {
     apiUtils.logout();
@@ -214,61 +195,7 @@ export default function Navbar() {
                 )}
 
                 {/* Notifications */}
-                <div className="relative dropdown-container">
-                  <button
-                    onClick={() => {
-                      setShowNotifications(!showNotifications);
-                      setShowProfileDropdown(false);
-                    }}
-                    className="relative p-3 text-gray-600 hover:text-primary-600 rounded-xl hover:bg-white/20 transition-all duration-300 hover-lift"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-gradient-to-r from-error-500 to-error-600 rounded-full animate-pulse">
-                        {unreadCount}
-                      </span>
-                    )}
-                  </button>
-
-                  {/* Notifications Dropdown */}
-                  {showNotifications && (
-                    <div className="absolute right-0 mt-2 w-80 card-luxury rounded-2xl shadow-luxury-lg animate-slide-down">
-                      <div className="p-4 border-b border-gray-200">
-                        <h3 className="text-lg font-display font-semibold text-gray-900">Notifications</h3>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto scrollbar-luxury">
-                        {notifications.length > 0 ? (
-                          notifications.map((notification, index) => (
-                            <div key={index} className="p-4 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-                              <p className="text-sm text-gray-900 font-medium">{notification.message}</p>
-                              <p className="text-xs text-gray-500 mt-1">{notification.time}</p>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-4 text-center text-gray-500">
-                            <svg className="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                            </svg>
-                            <p className="text-sm">No new notifications</p>
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4 border-t border-gray-200">
-                        <button
-                          onClick={() => {
-                            router.push(`/${user.role}/notifications`);
-                            setShowNotifications(false);
-                          }}
-                          className="w-full text-center text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
-                        >
-                          View All Notifications
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                <NotificationBell className="dropdown-container" />
 
                 {/* Profile Dropdown */}
                 <div className="relative dropdown-container">
@@ -414,7 +341,7 @@ export default function Navbar() {
                         Announcements
                       </MobileNavLink>
                       <MobileNavLink onClick={() => { router.push('/resident/notifications'); setShowMobileMenu(false); }} isActive={isActive('/resident/notifications')}>
-                        Notifications {unreadCount > 0 && <span className="ml-2 px-2 py-1 text-xs bg-error-500 text-white rounded-full">{unreadCount}</span>}
+                        Notifications
                       </MobileNavLink>
                     </>
                   )}

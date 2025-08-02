@@ -49,6 +49,7 @@ export default function ResidentDashboard() {
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState('');
+  const [highlightedIssue, setHighlightedIssue] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -69,6 +70,13 @@ export default function ResidentDashboard() {
     };
 
     checkAuth();
+
+    // Check for highlight parameter from notifications
+    if (router.query.highlight) {
+      setHighlightedIssue(router.query.highlight as string);
+      // Remove highlight after 5 seconds
+      setTimeout(() => setHighlightedIssue(null), 5000);
+    }
   }, [router]);
 
   const fetchMyIssues = async () => {
@@ -280,7 +288,14 @@ export default function ResidentDashboard() {
                 </div>
               ) : (
                 safeIssues.map((issue) => (
-                  <div key={issue._id} className="px-6 py-4">
+                  <div 
+                    key={issue._id} 
+                    className={`px-6 py-4 transition-all duration-300 ${
+                      highlightedIssue === issue._id 
+                        ? 'bg-blue-50 border-l-4 border-blue-500 animate-pulse' 
+                        : ''
+                    }`}
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-3 mb-2">

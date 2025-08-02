@@ -1,5 +1,6 @@
 const Issue = require('../models/Issue');
 const User = require('../models/User');
+const NotificationService = require('../services/notificationService');
 
 // Create new issue (Resident only)
 exports.createIssue = async (req, res) => {
@@ -106,6 +107,9 @@ exports.updateIssueStatus = async (req, res) => {
       return res.status(404).json({ message: 'Issue not found' });
     }
 
+    // Store old status for notification comparison
+    const oldStatus = issue.status;
+
     // Update fields
     if (status) {
       issue.status = status;
@@ -121,6 +125,16 @@ exports.updateIssueStatus = async (req, res) => {
     // Populate for response
     await issue.populate('resident', 'name email');
     await issue.populate('assignedTo', 'name email');
+
+    // Create notification if status changed
+    if (status && oldStatus !== status) {
+      try {
+        await NotificationService.createIssueUpdateNotification(issue, oldStatus, status);
+      } catch (notificationError) {
+        console.error('Failed to create notification:', notificationError);
+        // Don't fail the main request if notification fails
+      }
+    }
 
     res.json({
       message: 'Issue updated successfully',

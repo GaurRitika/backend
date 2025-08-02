@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
 const Event = require('../models/Event');
 const User = require('../models/User');
+const NotificationService = require('../services/notificationService');
 
 // Get all events (public)
 router.get('/', async (req, res) => {
@@ -108,6 +109,16 @@ router.post('/', authenticateToken, async (req, res) => {
     });
 
     await event.save();
+
+    // Create notifications for residents if event is public and active
+    if (event.isPublic && event.isActive) {
+      try {
+        await NotificationService.createEventNotification(event);
+      } catch (notificationError) {
+        console.error('Failed to create event notifications:', notificationError);
+        // Don't fail the main request if notification fails
+      }
+    }
 
     res.status(201).json(event);
   } catch (error) {
