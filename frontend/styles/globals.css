@@ -124,7 +124,7 @@
   
   .card::before {
     content: '';
-    @apply absolute inset-0 bg-gradient-to-br from-primary-500/8 to-secondary-500/8 opacity-0 transition-opacity duration-700;
+    @apply absolute inset-0 bg-gradient-to-br from-primary-500/[0.08] to-secondary-500/[0.08] opacity-0 transition-opacity duration-700;
   }
   
   .card:hover::before {

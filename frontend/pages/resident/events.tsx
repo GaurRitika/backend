@@ -74,7 +74,7 @@ const ResidentEvents: React.FC = () => {
       setEvents(Array.isArray(data.events) ? data.events : []);
       setPagination(data.pagination || { currentPage: 1, totalPages: 1, totalItems: 0, hasNextPage: false, hasPrevPage: false });
       setError(null);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch events');
       setEvents([]);
       setPagination({ currentPage: 1, totalPages: 1, totalItems: 0, hasNextPage: false, hasPrevPage: false });
@@ -86,7 +86,7 @@ const ResidentEvents: React.FC = () => {
   const fetchMyEvents = async () => {
     try {
       const data = await eventAPI.getMyEvents();
-      setMyEvents(data.events);
+      setMyEvents(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching my events:', err);
     }

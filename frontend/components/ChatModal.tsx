@@ -30,11 +30,11 @@ export default function ChatModal({ isOpen, onClose, selectedResident }: ChatMod
   const [newMessage, setNewMessage] = useState('');
   const [residents, setResidents] = useState<Resident[]>([]);
   const [selectedResidentId, setSelectedResidentId] = useState<string>('');
-  const [conversationId, setConversationId] = useState<string>('');
+  const [, setConversationId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -83,7 +83,7 @@ export default function ChatModal({ isOpen, onClose, selectedResident }: ChatMod
   const fetchResidents = async () => {
     try {
       const response = await messageAPI.getResidents();
-      setResidents(response);
+      setResidents(Array.isArray(response) ? response : []);
     } catch (error) {
       console.error('Error fetching residents:', error);
     }
@@ -92,15 +92,15 @@ export default function ChatModal({ isOpen, onClose, selectedResident }: ChatMod
   const fetchConversation = async (residentId: string) => {
     try {
       setLoading(true);
-      const conversations = await messageAPI.getConversations();
-      const conversation = conversations.find((conv: any) => 
-        conv.participants.some((p: any) => p._id === residentId)
+      const conversations = await messageAPI.getConversations() as Array<{ _id: string; participants: Array<{ _id: string }> }>;
+      const conversation = conversations.find((conv: { participants: Array<{ _id: string }> }) => 
+        conv.participants.some((p: { _id: string }) => p._id === residentId)
       );
       
       if (conversation) {
         setConversationId(conversation._id);
         const messages = await messageAPI.getConversationMessages(conversation._id);
-        setMessages(messages);
+        setMessages(Array.isArray(messages) ? messages : []);
       } else {
         setMessages([]);
       }
@@ -118,14 +118,14 @@ export default function ChatModal({ isOpen, onClose, selectedResident }: ChatMod
       const messageData = {
         receiverId: selectedResidentId,
         content: newMessage.trim(),
-        messageType: 'text'
+        messageType: 'text' as const
       };
 
       // Send via API
       const response = await messageAPI.sendMessage(messageData);
       
       // Add to local state
-      setMessages(prev => [...prev, response]);
+      setMessages(prev => [...prev, response as Message]);
       
       // Send via socket for real-time
       socketManager.sendMessage(messageData);

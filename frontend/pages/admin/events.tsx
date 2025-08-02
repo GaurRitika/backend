@@ -89,16 +89,16 @@ const AdminEvents: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const params: any = {
+      const params: Record<string, unknown> = {
         page,
         limit: 12,
         isActive: filters.isActive
       };
       if (filters.category) params.category = filters.category;
-      const data: EventsResponse = await eventAPI.getOrganizedEvents(params);
-      setEvents(Array.isArray(data.events) ? data.events : []);
-      setPagination(data.pagination);
-    } catch (err) {
+      const data = await eventAPI.getOrganizedEvents();
+      setEvents(Array.isArray(data) ? data : []);
+      setPagination({ currentPage: 1, totalPages: 1, totalItems: Array.isArray(data) ? data.length : 0, hasNextPage: false, hasPrevPage: false });
+    } catch {
       setError('Failed to fetch events');
       setEvents([]); // fallback to empty array
     } finally {

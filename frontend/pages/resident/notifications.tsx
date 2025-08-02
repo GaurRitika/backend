@@ -47,7 +47,7 @@ const ResidentNotifications: React.FC = () => {
   const fetchNotifications = async (page = 1) => {
     try {
       setLoading(true);
-      const params: any = {
+      const params: Record<string, unknown> = {
         page,
         limit: 20,
         unreadOnly: filter === 'unread'

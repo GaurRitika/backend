@@ -20,7 +20,7 @@ interface Issue {
     phoneNumber?: string;
     callDuration?: number;
     conversationSummary?: string;
-    extractedVariables?: any;
+    extractedVariables?: Record<string, unknown>;
     issueType?: string;
     location?: string;
   };
@@ -95,12 +95,12 @@ export default function AdminDashboard() {
         issueAPI.getIssueStats()
       ]);
       
-      setIssues(issuesResponse.issues || []);
+      setIssues((issuesResponse as Record<string, unknown>)?.issues as Issue[] || []);
       setStats({
-        totalIssues: statsResponse.totalIssues || 0,
-        pendingIssues: statsResponse.pendingIssues || 0,
-        resolvedIssues: statsResponse.resolvedIssues || 0,
-        inProgressIssues: statsResponse.inProgressIssues || 0
+        totalIssues: (statsResponse as Record<string, unknown>)?.totalIssues as number || 0,
+        pendingIssues: (statsResponse as Record<string, unknown>)?.pendingIssues as number || 0,
+        resolvedIssues: (statsResponse as Record<string, unknown>)?.resolvedIssues as number || 0,
+        inProgressIssues: (statsResponse as Record<string, unknown>)?.inProgressIssues as number || 0
       });
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred';
@@ -123,16 +123,16 @@ export default function AdminDashboard() {
       
       // Update the issue in the local state
       setIssues(issues.map(issue => 
-        issue._id === issueId ? response.issue : issue
+        issue._id === issueId ? (response as Record<string, unknown>).issue as Issue : issue
       ));
       
       // Refresh stats
       const statsResponse = await issueAPI.getIssueStats();
       setStats({
-        totalIssues: statsResponse.totalIssues || 0,
-        pendingIssues: statsResponse.pendingIssues || 0,
-        resolvedIssues: statsResponse.resolvedIssues || 0,
-        inProgressIssues: statsResponse.inProgressIssues || 0
+        totalIssues: (statsResponse as Record<string, unknown>).totalIssues as number || 0,
+        pendingIssues: (statsResponse as Record<string, unknown>).pendingIssues as number || 0,
+        resolvedIssues: (statsResponse as Record<string, unknown>).resolvedIssues as number || 0,
+        inProgressIssues: (statsResponse as Record<string, unknown>).inProgressIssues as number || 0
       });
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
     
     // Fetch filtered data
     issueAPI.getAllIssues(newFilters)
-      .then(response => setIssues(response.issues || []))
+      .then(response => setIssues((response as Record<string, unknown>).issues as Issue[] || []))
       .catch(err => setError(err.message));
   };
 

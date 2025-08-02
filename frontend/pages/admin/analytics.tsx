@@ -94,7 +94,7 @@ export default function AdminAnalytics() {
         endDate: endDate.toISOString()
       });
       
-      setAnalytics(response);
+      setAnalytics(response as AnalyticsData);
     } catch (err: unknown) {
       console.error('Error fetching analytics:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch analytics');
@@ -120,15 +120,15 @@ export default function AdminAnalytics() {
     checkAuth();
   }, [router, timeRange]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'pending': return 'bg-yellow-500';
-      case 'in-progress': return 'bg-blue-500';
-      case 'resolved': return 'bg-green-500';
-      case 'rejected': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
+  // const getStatusColor = (status: string) => {
+  //   switch (status) {
+  //     case 'pending': return 'bg-yellow-500';
+  //     case 'in-progress': return 'bg-blue-500';
+  //     case 'resolved': return 'bg-green-500';
+  //     case 'rejected': return 'bg-red-500';
+  //     default: return 'bg-gray-500';
+  //   }
+  // };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

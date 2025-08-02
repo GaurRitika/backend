@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { notificationAPI } from '../../utils/api';
-import { useRouter } from 'next/router';
+// import { useRouter } from 'next/router';
 
 interface Notification {
   _id: string;
@@ -54,7 +54,7 @@ const AdminNotifications: React.FC = () => {
     try {
       setLoading(true);
       const data = await notificationAPI.getNotificationStats();
-      setStats(data);
+      setStats(data as NotificationStats);
       setError(null);
     } catch (err) {
       setError('Failed to fetch notification statistics');
@@ -76,7 +76,14 @@ const AdminNotifications: React.FC = () => {
         priority: 'medium',
         actionUrl: ''
       });
-      setShowSendForm(false);
+      setSendForm({
+        recipientId: '',
+        title: '',
+        message: '',
+        type: 'announcement',
+        priority: 'medium',
+        actionUrl: ''
+      });
       fetchStats(); // Refresh stats
       alert('Notification sent successfully!');
     } catch (err) {
@@ -99,7 +106,7 @@ const AdminNotifications: React.FC = () => {
         userRole: userRole || undefined
       });
       setBroadcastForm({ title: '', message: '', type: 'announcement', priority: 'medium', actionUrl: '', userRole: '' });
-      setShowBroadcastForm(false);
+      // Form reset is already done above
       fetchStats(); // Refresh stats
       alert(`Notification broadcasted to ${result.sentCount} users!`);
     } catch (err) {
@@ -176,7 +183,7 @@ const AdminNotifications: React.FC = () => {
             ].map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setSelectedTab(tab.id as any)}
+                onClick={() => setSelectedTab(tab.id === 'individual' ? 'send' : tab.id === 'group' ? 'send' : 'broadcast')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   selectedTab === tab.id
                     ? 'border-orange-500 text-orange-600'

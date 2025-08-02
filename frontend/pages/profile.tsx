@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Navbar from '../components/Navbar';
 import { apiUtils } from '../utils/api';
-import { PrimaryButton, SecondaryButton } from '../components/EnhancedButton';
+import { PrimaryButton } from '../components/EnhancedButton';
 import { LuxuryCard, PremiumCard } from '../components/EnhancedCard';
 
 interface UserProfile {
@@ -264,7 +264,6 @@ export default function ProfilePage() {
                   
                   <div className="flex justify-end">
                     <PrimaryButton
-                      type="submit"
                       loading={saving}
                       size="lg"
                       className="px-12"
@@ -334,7 +333,7 @@ export default function ProfilePage() {
                 
                 <div className="flex justify-end mt-8">
                   <PrimaryButton
-                    onClick={handleProfileUpdate}
+                    onClick={() => handleProfileUpdate({ preventDefault: () => {} } as React.FormEvent)}
                     loading={saving}
                     size="lg"
                     className="px-12"
@@ -387,7 +386,6 @@ export default function ProfilePage() {
                   
                   <div className="flex justify-end">
                     <PrimaryButton
-                      type="submit"
                       loading={saving}
                       size="lg"
                       className="px-12"
